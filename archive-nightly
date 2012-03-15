@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+
+# Save the build artifacts used by downstream jobs for publishing the nightly build.
+# Creates a single file jenkins-artifacts.tgz containing everything
+
+rm -rf jenkins-artifacts
+rm jenkins-artifacts.tgz
+
+mkdir jenkins-artifacts
+
+[[ -d build/scaladoc ]] && {
+  mkdir -p jenkins-artifacts/build
+  rsync -rlv build/scaladoc jenkins-artifacts/build/
+}
+
+[[ -d dists/archives ]] && {
+  mkdir -p jenkins-artifacts/dists
+  rsync -rlv dists/archives jenkins-artifacts/dists/
+}
+
+[[ -d dists/sbaz ]] && {
+  mkdir -p jenkins-artifacts/dists
+  rsync -rlv dists/sbaz jenkins-artifacts/dists/
+}
+
+[[ -d dists/maven ]] && {
+  mkdir -p jenkins-artifacts/dists
+  rsync -rlv dists/maven jenkins-artifacts/dists/
+}
+
+tar czf jenkins-artifacts.tgz jenkins-artifacts
+rm -rf jenkins-artifacts

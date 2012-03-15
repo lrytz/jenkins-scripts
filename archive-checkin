@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+
+# Archive build artifacts for checkin build. Creates (up to) three files:
+#   - jenkins-artifacts/pack.tgz
+#   - jenkins-artifacts/dist.tgz
+#   - jenkins-artifacts/maven.tgz
+
+revision=`git rev-parse HEAD`
+
+rm -rf jenkins-artifacts
+mkdir jenkins-artifacts
+
+
+
+# introduced building of maven artifacts
+antWithMavenRev="81985e49cf9f492a4af6be8ed5c3125ca4861fbe"
+antWithMaven () {
+  echo "archiving antWithMaven"
+  buildPack
+  distsLatest
+  distsMavenLatest
+}
+
+
+# introduced SABBUS, the 'new' build.xml
+antNoMavenRev="0385e9835d6fac729b6672294fa8e4c6b1ea3c10"
+antNoMaven () {
+  echo "archiving antNoMaven"
+  buildPack
+  distsLatest
+}
+
+
+# the pre-SABBUS build script
+oldAnt () {
+  echo "archiving oldAnt"
+  buildPack
+  distsLatest
+}
+
+
+
+buildPack () {
+  [[ -d build/pack ]] && {
+    tar czf jenkins-artifacts/pack.tgz -C build pack
+  }
+}
+
+distsLatest () {
+  [[ -L dists/latest ]] && {
+    tar czhf jenkins-artifacts/dist.tgz -C dists latest
+  }
+}
+
+distsMavenLatest () {
+  [[ -d dists/maven/latest ]] && {
+    tar czhf jenkins-artifacts/maven.tgz -C dists/maven latest
+  }
+}
+
+
+if [[ `git rev-list $revision | grep $antWithMavenRev` ]]; then
+  antWithMaven
+elif [[ `git rev-list $revision | grep $antNoMavenRev` ]]; then
+  antNoMaven
+else
+  oldAnt
+fi

@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+# Builds nightlies
+
+# Usage: $0 [opt opt ...]
+#
+#  The options are supplied to scalac and partest.
+#  Example:   $0 -Xcheckinit -Ycheck:all
+
+
+scalaArgs="-Dscalac.args=\"$@\" -Dpartest.scalac_opts=\"$@\""
+revision=`git rev-parse HEAD`
+
+
+
+# Different revisions require different ways of building. The ultimate
+# goal of this script is to allow building arbitrary revisions.
+
+
+# introduced build-opt
+antOptimizedRev="0f10ffedc8d0cdf8410cc6fc143a08a9333c9832"
+antOptimized () {
+  echo "build using antOptimized"
+  ant all.clean && ./pull-binary-libs.sh
+  ant $scalaArgs build-opt && ant $scalaArgs nightly
+}
+
+# introduced SABBUS, the 'new' build.xml
+antNightlyRev="0385e9835d6fac729b6672294fa8e4c6b1ea3c10"
+antNightly () {
+  echo "build using antNightly"
+  ant all.clean && ./pull-binary-libs
+  ant $scalaArgs nightly
+}
+
+abortBuild () {
+  echo "Don't know how to build revision $revision"
+  exit 1
+}
+
+
+
+if [[ `git rev-list $revision | grep $antOptimizedRev` ]]; then
+  antOptimized
+elif [[ `git rev-list $revision | grep $antNightlyRev` ]]; then
+  antNightly
+else
+  abortBuild
+fi
