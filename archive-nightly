@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -x
 
 # Save the build artifacts used by downstream jobs for publishing the nightly build.
 # Creates a single file jenkins-artifacts.tgz containing everything

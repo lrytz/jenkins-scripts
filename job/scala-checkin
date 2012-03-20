@@ -1,0 +1,6 @@
+#!/bin/bash -x
+
+./jenkins-scripts/build
+savedState=$?
+./jenkins-scripts/archive-checkin
+exit $state

@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -x
 
 # Publishes nightly build to rsync_dest
 
@@ -19,8 +19,6 @@ rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
   echo "Can't find build, has it completed? No directory at dists/archives"
   exit 1
 }
-
-echo "Publishing nightly build to $rsync_dest"
 
 # Archive Scala nightly distribution
 rsync -az dists/archives/ "$rsync_dest/distributions"

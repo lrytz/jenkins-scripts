@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -x
 
 # Archive build artifacts for checkin build. Creates (up to) three files:
 #   - jenkins-artifacts/pack.tgz

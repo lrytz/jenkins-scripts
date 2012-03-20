@@ -1,4 +1,8 @@
-#!/usr/bin/env bash
+#!/bin/bash -ex
+
+# the -e flag makes the script stop and fail when one of the commands fails.
+# don't change it.
+
 
 # Builds nightlies
 
