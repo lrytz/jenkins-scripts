@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 # the -e flag makes the script stop and fail when one of the commands fails.
-# don't change it.
+# don't change it. the -x flag prints commands, helpful for jenkins log.
 
 
 # Builds nightlies
@@ -16,6 +16,10 @@ scalaArgs="-Dscalac.args=\"$@\" -Dpartest.scalac_opts=\"$@\""
 revision=`git rev-parse HEAD`
 
 
+clean () {
+  git clean -dfx -e /jenkins-scripts/
+}
+
 
 # Different revisions require different ways of building. The ultimate
 # goal of this script is to allow building arbitrary revisions.
@@ -25,15 +29,18 @@ revision=`git rev-parse HEAD`
 antOptimizedRev="0f10ffedc8d0cdf8410cc6fc143a08a9333c9832"
 antOptimized () {
   echo "build using antOptimized"
-  ant all.clean && ./pull-binary-libs.sh
-  ant $scalaArgs build-opt && ant $scalaArgs nightly
+  clean
+  ./pull-binary-libs.sh
+  ant $scalaArgs build-opt
+  ant $scalaArgs nightly
 }
 
 # introduced SABBUS, the 'new' build.xml
 antNightlyRev="0385e9835d6fac729b6672294fa8e4c6b1ea3c10"
 antNightly () {
   echo "build using antNightly"
-  ant all.clean && ./pull-binary-libs
+  clean
+  ./pull-binary-libs
   ant $scalaArgs nightly
 }
 
