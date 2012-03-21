@@ -3,8 +3,7 @@
 # Save the build artifacts used by downstream jobs for publishing the nightly build.
 # Creates a single file jenkins-artifacts.tgz containing everything
 
-rm -rf jenkins-artifacts
-rm jenkins-artifacts.tgz
+rm -rf jenkins-artifacts jenkins-artifacts.tgz
 
 mkdir jenkins-artifacts
 
