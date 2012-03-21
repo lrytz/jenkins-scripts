@@ -1,0 +1,17 @@
+#!/bin/bash -ex
+
+# Build 'locker' without "-Yrangepos", because 'starr' might not have the
+# latest rangepos fixes.
+
+scalacArgs="-Dscalac.args=\"-Yrangepos\" -Dpartest.scalac_opts=\"-Yrangepos\""
+
+git clean -dfx -e /jenkins-scripts/
+
+./pull-binary-libs.sh
+
+ant locker.done
+ant $scalacArgs build-opt
+
+# Don't do stability tests - these will fail because 'locker' was built
+# differently than the rest (without "-Yrangepos").
+ant $scalacArgs test.suite test.continuations.suite test.scaladoc
