@@ -3,6 +3,9 @@
 # @lukas: not sure why this is needed. without it, the 'pull-binary-libs' script fails (*)
 export PATH="/cygdrive/c/cygwin/bin:$PATH"
 
+# even though 'echo $OSTYPE' prints 'cygwin', the environment variable is not set (as revealed by 'env')
+export OSTYPE="cygwin"
+
 git config --global core.autocrlf input
 ./jenkins-scripts/build
 
