@@ -9,9 +9,8 @@ git clean -dfx -e /jenkins-scripts/
 
 ./pull-binary-libs.sh
 
-ant locker.done
+ant -Dscalac.args.optimise=-optimise locker.done
 ant $scalacArgs build-opt
 
-# Don't do stability tests - these will fail because 'locker' was built
-# differently than the rest (without "-Yrangepos").
-ant $scalacArgs test.suite test.continuations.suite test.scaladoc
+# No need to run the stability tests
+ant -Dscalac.args.optimise=-optimise $scalacArgs test.suite test.continuations.suite test.scaladoc
