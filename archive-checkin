@@ -48,6 +48,8 @@ buildPack () {
 
 distsLatest () {
   [[ -L dists/latest ]] && {
+    # "tar -h" follows symlinks. This helps here so we don't have
+    # to find out the distribution's folder name.
     tar czhf jenkins-artifacts/dist.tgz -C dists latest
   }
 }

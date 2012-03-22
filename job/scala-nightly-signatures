@@ -1,4 +1,5 @@
 #!/bin/bash -ex
+
 git clean -dfx
 
 JAVA_OPTS="$JAVA_OPTS -Dsbt.log.noformat=true" sbt-10 "set logLevel := Level.Error" clean assembly
