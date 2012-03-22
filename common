@@ -1,0 +1,16 @@
+#!/bin/bash -x
+
+nightly_rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
+
+gitClean () {
+  git clean -dfx -e /jenkins-scripts/
+}
+
+wgetFile () {
+  [[ $# -eq 1 ]] || {
+    echo "wgetFile misses argument"
+    exit 1
+  }
+  echo "getting $1"
+  wget --no-check-certificate --quiet https://scala-webapps.epfl.ch/jenkins/$1
+}

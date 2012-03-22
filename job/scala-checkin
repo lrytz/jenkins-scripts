@@ -1,6 +1,8 @@
 #!/bin/bash -x
 
-./jenkins-scripts/build
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+
+$scriptsDir/build
 savedState=$?
-./jenkins-scripts/archive-checkin
+$scriptsDir/archive-checkin
 exit $state

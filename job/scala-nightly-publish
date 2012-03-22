@@ -1,13 +1,16 @@
-#!/bin/bash -x
+#!/bin/bash -ex
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
 
 [[ $publish == "true" ]] && {
-  wget --no-check-certificate --quiet https://scala-webapps.epfl.ch/jenkins/job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
+  wgetFile job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
   tar xzf jenkins-artifacts.tgz
 
   cd jenkins-artifacts
 
   # publishes the nightly archives, scaladocs
-  ../jenkins-scripts/publish-nightly master
+  $scriptsDir/publish-nightly master
 
   # push to the maven repository
   cd dists/maven/latest

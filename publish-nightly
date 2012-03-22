@@ -1,5 +1,8 @@
 #!/bin/bash -x
 
+scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
+. $scriptsDir/common
+
 # Publishes nightly build to rsync_dest
 
 [[ $# -eq 1 ]] || {
@@ -12,7 +15,6 @@ EOM
 }
 
 branch="$1"
-rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
 
 
 [[ -d dists/archives ]] || {
@@ -21,10 +23,10 @@ rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
 }
 
 # Archive Scala nightly distribution
-rsync -az dists/archives/ "$rsync_dest/distributions"
+rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
 
 # publish scaladoc nightlies if we are in the master branch
-[[ $branch == "master" ]] && rsync -az build/scaladoc/ "$rsync_dest/docs"
+[[ $branch == "master" ]] && rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
 
 # publish sbaz packages
-[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$rsync_dest/sbaz"
+[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"

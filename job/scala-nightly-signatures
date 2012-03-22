@@ -1,10 +1,13 @@
 #!/bin/bash -ex
 
-git clean -dfx
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
+
+gitClean
 
 JAVA_OPTS="$JAVA_OPTS -Dsbt.log.noformat=true" sbt-10 "set logLevel := Level.Error" clean assembly
 chmod a+x badsigs.sh
-wget --no-check-certificate --quiet https://scala-webapps.epfl.ch/jenkins/job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
+wgetFile job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
 tar xzf jenkins-artifacts.tgz
 
 ./badsigs.sh jenkins-artifacs/dists/latest/lib/scala-library.jar

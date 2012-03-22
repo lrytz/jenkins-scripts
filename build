@@ -3,6 +3,9 @@
 # the -e flag makes the script stop and fail when one of the commands fails.
 # don't change it. the -x flag prints commands, helpful for jenkins log.
 
+scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
+. $scriptsDir/common
+
 
 # Builds nightlies
 
@@ -11,14 +14,9 @@
 #  The options are supplied to scalac and partest.
 #  Example:   $0 -Xcheckinit -Ycheck:all
 
-
 scalaArgs="-Dscalac.args=\"$@\" -Dpartest.scalac_opts=\"$@\""
 revision=`git rev-parse HEAD`
 
-
-clean () {
-  git clean -dfx -e /jenkins-scripts/
-}
 
 
 # Different revisions require different ways of building. The ultimate
@@ -29,7 +27,7 @@ clean () {
 antOptimizedRev="0f10ffedc8d0cdf8410cc6fc143a08a9333c9832"
 antOptimized () {
   echo "build using antOptimized"
-  clean
+  gitClean
   ./pull-binary-libs.sh
   ant $scalaArgs build-opt
   ant $scalaArgs nightly
@@ -39,7 +37,7 @@ antOptimized () {
 antNightlyRev="0385e9835d6fac729b6672294fa8e4c6b1ea3c10"
 antNightly () {
   echo "build using antNightly"
-  clean
+  gitClean
   ./pull-binary-libs
   ant $scalaArgs nightly
 }

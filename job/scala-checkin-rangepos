@@ -1,11 +1,14 @@
 #!/bin/bash -ex
 
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
+
 # Build 'locker' without "-Yrangepos", because 'starr' might not have the
 # latest rangepos fixes.
 
 scalacArgs="-Dscalac.args=\"-Yrangepos\" -Dpartest.scalac_opts=\"-Yrangepos\""
 
-git clean -dfx -e /jenkins-scripts/
+gitClean
 
 ./pull-binary-libs.sh
 

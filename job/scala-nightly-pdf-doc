@@ -1,6 +1,7 @@
 #!/bin/bash -ex
 
-rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
 
 if [ -d scala ]; then
   cd scala
@@ -33,6 +34,6 @@ PATH="/home/linuxsoft/bin:$PATH" ant clean build.byexample build.reference build
 
 # Publish nightly pdf documentation
 [[ $publish == "true" ]] && {
-  echo "Copying nightly pdf documentation to $rsync_dest"
-  rsync -az build/*.pdf $rsync_dest/pdfs
+  echo "Copying nightly pdf documentation to $nightly_rsync_dest"
+  rsync -az build/*.pdf $nightly_rsync_dest/pdfs
 }
