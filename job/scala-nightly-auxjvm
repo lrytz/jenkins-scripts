@@ -1,0 +1,7 @@
+#!/bin/bash -x
+
+if java -version 2>&1 | grep -q " 1.7"; then
+  git checkout -f origin/java7 && git merge origin/master && ./jenkins-scripts/build
+else
+  ./jenkins-scripts/build
+fi
