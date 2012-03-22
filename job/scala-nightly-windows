@@ -1,4 +1,13 @@
 #!/bin/bash -x
 
+# @lukas: not sure why this is needed. without it, the 'pull-binary-libs' script fails (*)
+export PATH="/cygdrive/c/cygwin/bin:$PATH"
+
 git config --global core.autocrlf input
 ./jenkins-scripts/build
+
+# (*)
+# bash.exe: warning: could not find /tmp, please create!
+# Access denied - H:/JENKINS/WORKSPACE/TEST/LIB
+# File not found - -NAME
+# .....
