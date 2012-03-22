@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 #
 # filename format is (currently) "scala-2.8.3.rdev-245-2011-12-19-g3d17295.zip"
 
