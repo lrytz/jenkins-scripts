@@ -14,5 +14,5 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
   # push to the maven repository
   cd dists/maven/latest
-  ant deploy.snapshot -Dsettings.file=/home/linuxsoft/apps/hudson-maven-settings/settings.xml
+  ant deploy.snapshot -Dsettings.file=$maven_settings_file
 }

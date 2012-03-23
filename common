@@ -1,16 +1,21 @@
 #!/bin/bash -x
 
-nightly_rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
+[[ ! -z $nightly_rsync_dest ]] || {
 
-gitClean () {
-  git clean -dfx -e /jenkins-scripts/
-}
+  nightly_rsync_dest="scalatest@chara.epfl.ch:/home/linuxsoft/archives/scala/nightly"
+  maven_settings_file="/home/linuxsoft/apps/hudson-maven-settings/settings.xml"
 
-wgetFile () {
-  [[ $# -eq 1 ]] || {
-    echo "wgetFile misses argument"
-    exit 1
+  gitClean () {
+    git clean -dfx -e /jenkins-scripts/
   }
-  echo "getting $1"
-  wget --no-check-certificate --quiet https://scala-webapps.epfl.ch/jenkins/$1
+
+  wgetFile () {
+    [[ $# -eq 1 ]] || {
+      echo "wgetFile misses argument"
+      exit 1
+    }
+    echo "getting $1"
+    wget --no-check-certificate --quiet https://scala-webapps.epfl.ch/jenkins/$1
+  }
+
 }
