@@ -10,4 +10,4 @@ chmod a+x badsigs.sh
 wgetFile job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
 tar xzf jenkins-artifacts.tgz
 
-./badsigs.sh jenkins-artifacs/dists/latest/lib/scala-library.jar
+./badsigs.sh jenkins-artifacts/dists/latest/lib/scala-library.jar

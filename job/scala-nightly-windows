@@ -3,6 +3,7 @@
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 # @lukas: not sure why this is needed. without it, the 'pull-binary-libs' script fails (*)
+# also, some tools (e.g. whoami) are in /usr/bin when running cygwin manually, but not to the jenkins ssh clien. no idea...
 export PATH="/cygdrive/c/cygwin/bin:$PATH"
 
 # even though 'echo $OSTYPE' prints 'cygwin', the environment variable is not set (as revealed by 'env')
