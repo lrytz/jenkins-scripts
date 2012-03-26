@@ -3,13 +3,18 @@
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 # @lukas: not sure why this is needed. without it, the 'pull-binary-libs' script fails (*)
-# also, some tools (e.g. whoami) are in /usr/bin when running cygwin manually, but not to the jenkins ssh clien. no idea...
+# also, some tools (e.g. whoami) are in /usr/bin when running cygwin manually, but not in the jenkins ssh client. no idea...
 export PATH="/cygdrive/c/cygwin/bin:$PATH"
 
-# even though 'echo $OSTYPE' prints 'cygwin', the environment variable is not set (as revealed by 'env')
+# even though 'echo $OSTYPE' prints 'cygwin', the environment variable is not set (as revealed by 'env')...
 export OSTYPE="cygwin"
 
 git config --global core.autocrlf input
+
+# git clean always reports "warning: failed to remove build/".
+# maybe this bug? http://code.google.com/p/msysgit/issues/detail?id=434
+rm -rf build
+
 $scriptsDir/build
 
 # (*)
