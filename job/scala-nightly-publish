@@ -4,6 +4,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 
 [[ $publish == "true" ]] && {
+  rm -rf jenkins-artifacts jenkins-artifacts.tgz
   wgetFile job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
   tar xzf jenkins-artifacts.tgz
 
