@@ -5,4 +5,4 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 $scriptsDir/build
 savedState=$?
 $scriptsDir/archive-checkin
-exit $state
+exit $savedState

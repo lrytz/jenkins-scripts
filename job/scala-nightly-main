@@ -5,4 +5,4 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 $scriptsDir/build
 savedState=$?
 $scriptsDir/archive-nightly
-exit $state
+exit $savedState
