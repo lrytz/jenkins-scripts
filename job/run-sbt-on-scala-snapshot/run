@@ -1,7 +1,7 @@
 #!/bin/bash -ex
 
 runSbt () {
-  java $JAVA_OPTS -jar `dirname $0`/sbt-launch.jar -Dsbt.log.noformat=true $@
+  java $JAVA_OPTS -jar `dirname $0`/sbt-launch.jar -Dsbt.global.base=`dirname $0`/sbt-base -Dsbt.log.noformat=true $@
 }
 
 git clean -dfx
