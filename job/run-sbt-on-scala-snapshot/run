@@ -1,0 +1,10 @@
+#/bin/bash -ex
+
+runSbt () {
+  java $JAVA_OPTS -jar `dirname $0`/sbt-launch.jar -Dsbt.log.noformat=true $@
+}
+
+git clean -dfx
+wget http://typesafe.artifactoryonline.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.12.0-Beta2/sbt-launch.jar
+runSbt compile
+runSbt run | grep `cat out.check`
