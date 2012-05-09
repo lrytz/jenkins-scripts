@@ -1,9 +1,12 @@
 #!/bin/bash -ex
 
 script_dir="$( cd "$( dirname "$0" )" && pwd )"
-launcher_dir=$script_dir/project/launcher
+
+runSbt () {
+  sbtx -no-colors -no-share -sbt-launch-dir $script_dir/project/launcher "$@"
+}
 
 git clean -dfx
-sbt -no-colors -no-share -launcher-dir $launcher_dir compile
-sbt -no-colors -no-share -launcher-dir $launcher_dir run 2>&1 | tee out.txt
+runSbt compile
+runSbt run 2>&1 | tee out.txt
 grep `cat out.check` out.txt
