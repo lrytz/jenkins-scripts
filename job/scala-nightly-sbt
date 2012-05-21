@@ -1,0 +1,8 @@
+#!/bin/bash -ex
+
+scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
+. $scriptsDir/common
+
+gitClean
+
+sbt -no-colors -no-share "set logLevel := Level.Error" clean make-dist doc test
