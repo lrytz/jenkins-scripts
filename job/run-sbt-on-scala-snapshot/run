@@ -3,7 +3,7 @@
 script_dir="$( cd "$( dirname "$0" )" && pwd )"
 
 runSbt () {
-  sbt -no-colors -no-share -sbt-launch-dir $scriptsDir/project/launcher "$@"
+  sbt -no-colors -no-share -sbt-launch-dir $script_dir/project/launcher "$@"
 }
 
 git clean -dfx
