@@ -5,4 +5,4 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 gitClean
 
-sbt -no-colors -no-share "set logLevel := Level.Error" clean make-dist doc test
+sbt -no-colors -no-share -sbt-launch-dir $script_dir/../project/launcher clean make-dist doc test
