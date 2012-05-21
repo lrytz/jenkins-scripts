@@ -5,7 +5,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 gitClean
 
-sbt -no-colors -no-share -sbt-launch-dir $script_dir/../project/launcher "set logLevel := Level.Error" clean assembly
+sbt -no-colors -no-share -sbt-launch-dir $scriptsDir/../project/launcher "set logLevel := Level.Error" clean assembly
 chmod a+x badsigs.sh
 wgetFile job/scala-nightly-main/$mainBuild/artifact/jenkins-artifacts.tgz
 tar xzf jenkins-artifacts.tgz
