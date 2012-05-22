@@ -5,4 +5,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 gitClean
 
-sbt -no-colors -no-share -sbt-launch-dir $scriptsDir/../project/launcher clean make-dist doc test
+# first run crashes with IncompatibleClassChangeError, Josh is looking into it
+# http://stackoverflow.com/questions/1980452/what-causes-java-lang-incompatibleclasschangeerror
+sbt -no-colors -no-share -sbt-launch-dir $scriptsDir/../project/launcher clean compile || 0
+sbt -no-colors -no-share -sbt-launch-dir $scriptsDir/../project/launcher make-dist doc test
