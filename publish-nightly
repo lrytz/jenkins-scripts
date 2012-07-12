@@ -1,32 +1,45 @@
 #!/bin/bash -x
 
-scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
-. $scriptsDir/common
-
-# Publishes nightly build to rsync_dest
-
-[[ $# -eq 1 ]] || {
-  cat <<EOM
-Usage: $0 <branch>
-
-  <branch> denotes the branch that was built, e.g. "master" or "2.9.x".
+publishNightly () {
+  [[ $# -eq 4 ]] || {
+    cat <<EOM
+publishNightly <publish> <jobName> <buildNr>
+ - <publish> if not "true" then this function does nothing
+ - <jobName> name of jenkins job that built the distribution
+ - <buildNr> build number
+ - <publishScaladoc> if "true" then the scaladoc artifacts are published
 EOM
-  exit 1
+    exit 1
+  }
+
+  publish=$1
+  jobName=$2
+  buildNr=$3
+  publishScaladoc=$4
+
+  [[ $publish == "true" ]] && {
+    rm -rf jenkins-artifacts jenkins-artifacts.tgz
+    wgetFile job/$jobName/$buildNr/artifact/jenkins-artifacts.tgz
+    tar xzf jenkins-artifacts.tgz
+
+    cd jenkins-artifacts
+
+    [[ -d dists/archives ]] || {
+      echo "Can't find build, has it completed? No directory at dists/archives"
+      exit 1
+    }
+
+    # Archive Scala nightly distribution
+    echo rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
+
+    # publish scaladoc nightlies if we are in the master branch
+    [[ $publishScaladoc == "true" ]] && echo rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
+
+    # publish sbaz packages
+    #[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"
+
+    # push to the maven repository
+    cd dists/maven/latest
+    echo ant deploy.snapshot -Dsettings.file=$maven_settings_file
+  }
 }
-
-branch="$1"
-
-
-[[ -d dists/archives ]] || {
-  echo "Can't find build, has it completed? No directory at dists/archives"
-  exit 1
-}
-
-# Archive Scala nightly distribution
-rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
-
-# publish scaladoc nightlies if we are in the master branch
-[[ $branch == "master" ]] && rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
-
-# publish sbaz packages
-#[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"
