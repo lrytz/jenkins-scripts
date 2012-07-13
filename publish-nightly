@@ -30,16 +30,16 @@ EOM
     }
 
     # Archive Scala nightly distribution
-    echo rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
+    rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
 
     # publish scaladoc nightlies if we are in the master branch
-    [[ $publishScaladoc == "true" ]] && echo rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
+    [[ $publishScaladoc == "true" ]] && rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
 
     # publish sbaz packages
     #[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"
 
     # push to the maven repository
     cd dists/maven/latest
-    echo ant deploy.snapshot -Dsettings.file=$maven_settings_file
+    ant deploy.snapshot -Dsettings.file=$maven_settings_file
   }
 }
