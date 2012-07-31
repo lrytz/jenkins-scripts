@@ -2,5 +2,13 @@
 
 revision=`git rev-parse HEAD`
 
+ownHost=`hostname`
+destinationHost="moxie.typesafe.com"
+port=" -p 5000"
+[[ $ownHost == "akka" || $ownHost == "a1" || $ownHost == "a2" || $ownHost == "a3" || $ownHost == "a4" || $ownHost == "a5" ]] && {
+  destinationHost="akka.local"
+  port=""
+}
+
 echo "Copying artifacts to moxie..."
-rsync -av -e 'ssh -p 5000' jenkins-artifacts/ jenkins@moxie.typesafe.com:/localhome/jenkins/artifacts/$revision/
+rsync -av -e "ssh$port" jenkins-artifacts/ jenkins@$destinationHost:/localhome/jenkins/artifacts/$revision/
