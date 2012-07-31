@@ -1,0 +1,6 @@
+#!/bin/bash -x
+
+revision=`git rev-parse HEAD`
+
+echo "Copying artifacts to moxie..."
+rsync -av -e 'ssh -p 5000' jenkins-artifacts/ jenkins@moxie.typesafe.com:/localhome/jenkins/artifacts/$revision/

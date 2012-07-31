@@ -1,8 +1,13 @@
 #!/bin/bash -x
 
+publish=$1
+
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 $scriptsDir/build
 savedState=$?
 $scriptsDir/archive-checkin
+[[ $publish == "publish" ]] && {
+  $scriptsDir/publish-checkin
+}
 exit $savedState
