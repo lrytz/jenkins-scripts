@@ -5,9 +5,16 @@ publish=$1
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 $scriptsDir/build
-savedState=$?
+buildState=$?
 $scriptsDir/archive-checkin
 [[ $publish == "publish" ]] && {
   $scriptsDir/publish-checkin
 }
-exit $savedState
+publishState=$?
+
+# i'm not a bash programmer.
+if [[ $buildState == 0  && $publishState == 0 ]] ; then
+  exit 0
+else
+  exit 1
+fi
