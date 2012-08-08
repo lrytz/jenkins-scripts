@@ -1,0 +1,5 @@
+#!/bin/bash -x
+
+mkdir -p /localhome/jenkins/artifacts/$revision
+cd /localhome/jenkins/artifacts/$revision
+curl -o buildLog.txt https://scala-webapps.epfl.ch/jenkins/job/scala-checkin/$checkinBuild/consoleText
