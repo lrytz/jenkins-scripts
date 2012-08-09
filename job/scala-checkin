@@ -7,9 +7,9 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
-[[ $publish == "publish" ]] && {
+if [[ $publish == "publish" ]] ; then
   $scriptsDir/publish-checkin
-}
+fi
 publishState=$?
 
 # i'm not a bash programmer.
