@@ -15,7 +15,7 @@ git config --global core.autocrlf input
 # maybe this bug? http://code.google.com/p/msysgit/issues/detail?id=434
 rm -rf build
 
-$scriptsDir/build
+antArgs="-Darchives.skipxz=true" $scriptsDir/build
 
 # (*)
 # bash.exe: warning: could not find /tmp, please create!

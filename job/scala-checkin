@@ -4,7 +4,7 @@ publish=$1
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-$scriptsDir/build
+antArgs="-Darchives.skipxz=true" $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then

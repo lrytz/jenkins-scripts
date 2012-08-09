@@ -12,9 +12,14 @@ scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
 # Usage: $0 [opt opt ...]
 #
 #  The options are supplied to scalac and partest.
-#  Example:   $0 -Xcheckinit -Ycheck:all
+#  Example:   build -Xcheckinit -Ycheck:all
+#
+# This script also passes the env var 'antArgs' to the ant task, so it
+# can be called as
+#
+#  antArgs="-Darchives.skipxz=true" build
 
-scalaArgs="-Dscalac.args=\"$@\" -Dpartest.scalac_opts=\"$@\""
+scalacArgs="-Dscalac.args=\"$@\" -Dpartest.scalac_opts=\"$@\""
 revision=`git rev-parse HEAD`
 
 
@@ -29,8 +34,8 @@ antOptimized () {
   echo "build using antOptimized"
   gitClean
   ./pull-binary-libs.sh
-  ant $scalaArgs build-opt
-  ant $scalaArgs nightly
+  ant $antArgs $scalacArgs build-opt
+  ant $antArgs $scalacArgs nightly
 }
 
 # introduced SABBUS, the 'new' build.xml
@@ -39,7 +44,7 @@ antNightly () {
   echo "build using antNightly"
   gitClean
   ./pull-binary-libs
-  ant $scalaArgs nightly
+  ant $antArgs $scalacArgs nightly
 }
 
 abortBuild () {
