@@ -5,7 +5,8 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 if [ -d scala ]; then
   cd scala
-  git pull origin master
+  git fetch -f origin
+  git reset --hard origin/master
   cd ..
 else
   git clone git@github.com:scala/scala.git
@@ -13,7 +14,8 @@ fi
 
 if [ -d scala-dist ]; then
   cd scala-dist
-  git pull origin master
+  git fetch -f origin
+  git reset --hard origin/master
   cd ..
 else
   git clone git@github.com:scala/scala-dist.git
