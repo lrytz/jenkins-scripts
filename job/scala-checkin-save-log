@@ -3,6 +3,6 @@
 revision=$1
 checkinBuild=$2
 
-mkdir -p /localhome/jenkins/artifacts/$revision
-cd /localhome/jenkins/artifacts/$revision
+mkdir -p /backup/artifacts/$revision
+cd /backup/artifacts/$revision
 curl -o buildLog.txt https://scala-webapps.epfl.ch/jenkins/job/scala-checkin/$checkinBuild/consoleText
