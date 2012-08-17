@@ -1,9 +1,11 @@
 #!/bin/bash -x
 
+artifactsDir=$1
+
 revision=`git rev-parse HEAD`
 
 destinationHost="tresor-srv01.epfl.ch"
 destinationUsername="jenkinsbkp"
 
 echo "Copying artifacts to $destinationHost ..."
-rsync -av -e ssh jenkins-artifacts/ $destinationUsername@$destinationHost:/backup/artifacts/$revision/
+rsync -av -e ssh jenkins-artifacts/ $destinationUsername@$destinationHost:/backup/$artifactsDir/$revision/

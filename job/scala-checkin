@@ -1,6 +1,7 @@
 #!/bin/bash -x
 
 publish=$1
+artifactsDir=$2
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
@@ -8,7 +9,7 @@ antArgs="-Darchives.skipxz=true" $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then
-  $scriptsDir/publish-checkin
+  $scriptsDir/publish-checkin $artifactsDir
 fi
 publishState=$?
 
