@@ -15,11 +15,25 @@ slaves="lamppc49-a lamppc49-b lamppc49-c"
 
 slaveBusy() {
   infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
-  res=`curl $infoUrl | jsonq .idle | tr -d ' '`
-  if [[ $res == "false" ]]; then
-    return 0
-  else
+  res=`curl -s $infoUrl | jsonq .idle | tr -d ' '`
+  if [[ $res == "true" ]]; then
     return 1
+  else
+    # return 0 when $res is "false", but also when it has some other value.
+    # i.e. assume busy when there's an error retrieving the busyness.
+    return 0
+  fi
+}
+
+slaveOnline() {
+  infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
+  res=`curl -s $infoUrl | jsonq .offline | tr -d ' '`
+  if [[ $res == "true" ]]; then
+    return 1
+  else
+    # return 0 when $res is "false", but also when it has some other value.
+    # i.e. assume online when there's an error retrieving the offline state.
+    return 0
   fi
 }
 
@@ -43,6 +57,24 @@ if $busy; then
   echo "slaves still busy, exiting"
   exit 1
 else
+  for s in $slaves; do
+    if slaveOnline $s; then
+      echo "slave $s is not offline, aborting"
+      exit 1
+    fi
+  done
+
+
   echo "no other job running now"
+  sleep 10
+
+
+
+  for s in $slaves; do
+    if slaveOnline $s; then
+      echo "slave $s went online while running the tests, aborting"
+      exit 1
+    fi
+  done
   exit 0
 fi
