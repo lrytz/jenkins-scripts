@@ -1,0 +1,4 @@
+#!/bin/bash -x
+
+echo "running performance stuff"
+echo `hostname`
