@@ -1,4 +1,49 @@
 #!/bin/bash -x
 
-echo "running performance stuff"
-echo `hostname`
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+
+# number of minutes to poll the slaves for busyness. if some of the slaves are still
+# busy after that time, the script quits.
+pollTime=60
+
+# sleep time in minutes
+sleepTime=5
+
+# slaves to check for busyness
+slaves="lamppc49-a lamppc49-b lamppc49-c"
+
+checkSlaveBusy() {
+  infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
+  res=`curl $infoUrl | $scriptsDir/jsonq .idle`
+  if [[ $res == "false" ]]; then
+    return 0
+  else
+    return 1
+  fi
+}
+
+busy=true
+while [[ $busy && $pollTime -gt 0 ]]; do
+  busy="false"
+  for s in $slaves; do
+    echo "slave $s busy?"
+    checkSlaveBusy $s
+    if [[ $? == 0 ]]; then
+      busy=true
+    fi
+  done
+
+  if [[ $busy ]]; then
+    pollTime=$(($pollTime - $sleepTime))
+    sleep $(($sleepTime * 60))
+  fi
+done
+
+
+if [[ $busy ]]; then
+  echo "slaves still busy, exiting"
+  exit 1
+else
+  echo "doing stuff now"
+  exit 0
+fi
