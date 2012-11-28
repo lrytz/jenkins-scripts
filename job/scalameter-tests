@@ -2,8 +2,8 @@
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-# number of minutes to poll the slaves for busyness. if some of the slaves are still
-# busy after that time, the script quits.
+# number of minutes to poll the slaves for busyness. if some of the slaves
+# are still busy after that time, the script quits.
 pollTime=60
 
 # sleep time in minutes
@@ -12,9 +12,9 @@ sleepTime=5
 # slaves to check for busyness
 slaves="lamppc49-a lamppc49-b lamppc49-c"
 
-checkSlaveBusy() {
+slaveBusy() {
   infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
-  res=`curl $infoUrl | $scriptsDir/jsonq .idle`
+  res=`curl $infoUrl | $scriptsDir/jsonq .idle | tr -d ' '`
   if [[ $res == "false" ]]; then
     return 0
   else
@@ -23,27 +23,25 @@ checkSlaveBusy() {
 }
 
 busy=true
-while [[ $busy && $pollTime -gt 0 ]]; do
+while $busy && [[ $pollTime -gt 0 ]]; do
   busy=false
   for s in $slaves; do
-    echo "slave $s busy?"
-    checkSlaveBusy $s
-    if [[ $? == 0 ]]; then
+    if slaveBusy $s; then
       busy=true
     fi
   done
 
-  if [[ $busy ]]; then
+  if $busy; then
     pollTime=$(($pollTime - $sleepTime))
     sleep $(($sleepTime * 60))
   fi
 done
 
 
-if [[ $busy ]]; then
+if $busy; then
   echo "slaves still busy, exiting"
   exit 1
 else
-  echo "doing stuff now"
+  echo "no other job running now"
   exit 0
 fi
