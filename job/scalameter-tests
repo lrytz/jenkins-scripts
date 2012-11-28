@@ -24,7 +24,7 @@ checkSlaveBusy() {
 
 busy=true
 while [[ $busy && $pollTime -gt 0 ]]; do
-  busy="false"
+  busy=false
   for s in $slaves; do
     echo "slave $s busy?"
     checkSlaveBusy $s
