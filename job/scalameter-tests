@@ -97,7 +97,7 @@ else
     dataDir=`readlink -f ../data/$ver`
     mkdir -p $dataDir
     git clean -dfx
-    sbt 'set scalaVersion := "$ver"' 'set resolvers += Resolver.sonatypeRepo("snapshots")' 'runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks'
+    sbt "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks"
   done
 
 
