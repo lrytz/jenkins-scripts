@@ -92,6 +92,7 @@ else
   rm -rf scalameter
   git clone git://github.com/axel22/scalameter.git
   cd scalameter
+  git checkout -b $branch origin/$branch
 
   for ver in $scalaVersions; do
     dataDir=`readlink -f ../data/$ver`
