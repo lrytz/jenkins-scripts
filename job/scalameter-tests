@@ -22,7 +22,7 @@ branch="jenkins"
 # java version currently used
 javaVersion="1.7.0_09-b05"
 
-javaDir="/localhome/jenkins/apps/java-scalameter"
+javaDir="/home/jenkins/apps/java-scalameter"
 export PATH=$javaDir/bin:$PATH
 
 if ! java -version 2>&1 | grep "$javaVersion"; then
