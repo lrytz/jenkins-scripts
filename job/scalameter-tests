@@ -10,6 +10,9 @@ pollTime=60
 # sleep time in minutes
 sleepTime=5
 
+# homedir
+homedir=/localhome/jenkins
+
 # slaves to check for busyness
 slaves="lamppc49-a lamppc49-b lamppc49-c"
 
@@ -84,8 +87,8 @@ else
   done
 
 
-  mkdir -p ~/scalameter
-  cd ~/scalameter
+  mkdir -p $homedir/scalameter
+  cd $homedir/scalameter
 
   mkdir -p data
 
