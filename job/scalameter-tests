@@ -106,7 +106,7 @@ else
 
 
   cd ../data
-  rsync . scalatest@chara.epfl.ch:/home/wwwlamp/htdocs/scalameter
+  rsync -az . scalatest@chara.epfl.ch:/home/wwwlamp/htdocs/scalameter
 
 
   for s in $slaves; do
