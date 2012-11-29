@@ -22,6 +22,10 @@ scalaVersions="2.10.1-SNAPSHOT 2.11.0-SNAPSHOT"
 # scalameter branch to pick
 branch="jenkins"
 
+# where to publish the output data folders
+# the current settings make it available on http://lampwww.epfl.ch/benchmarks/
+rsyncDest="scalatest@chara.epfl.ch:/home/wwwlamp/htdocs/benchmarks"
+
 # java version currently used
 javaVersion="1.7.0_09-b05"
 
@@ -92,10 +96,15 @@ else
 
   mkdir -p data
 
-  rm -rf scalameter
-  git clone git://github.com/axel22/scalameter.git
-  cd scalameter
-  git checkout -b $branch origin/$branch
+  if [[ -d scalameter ]]; then
+    cd scalameter
+    git clean -dfx
+    git fetch -f origin
+  else
+    git clone git://github.com/axel22/scalameter.git
+    cd scalameter
+  fi
+  git checkout origin/$branch
 
   for ver in $scalaVersions; do
     dataDir=`readlink -f ../data/$ver`
@@ -106,7 +115,7 @@ else
 
 
   cd ../data
-  rsync -az . scalatest@chara.epfl.ch:/home/wwwlamp/htdocs/scalameter
+  rsync -az . $rsyncDest
 
 
   for s in $slaves; do
