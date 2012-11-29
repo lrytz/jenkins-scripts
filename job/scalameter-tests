@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash -ex
 
 # requires jsonq to be on the PATH
 # https://github.com/edmund-huber/jsonq
@@ -97,7 +97,7 @@ else
     dataDir=`readlink -f ../data/$ver`
     mkdir -p $dataDir
     git clean -dfx
-    sbt "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks"
+    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks"
   done
 
 
