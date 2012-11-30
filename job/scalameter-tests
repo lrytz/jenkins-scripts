@@ -39,6 +39,26 @@ if ! java -version 2>&1 | grep "$javaVersion"; then
 fi
 
 
+assertIdle() {
+  numBad=0
+  for i in `seq 1 10`; do
+    # get the cpu load in percent of all processes, remove header, sort by load, count the ones where cpu load is 0.x
+    numIdle=`ps -eo pcpu | grep "^\s*[0-9]" | sort -r | head -10 | grep "^\s*0" | wc -l`
+
+    # chek if there's a process with > 0.x CPU load
+    if [[ numIdle -lt 10 ]]; then
+      numBad=$(($numBad + 1))
+    fi
+    sleep 0.1
+  done
+  # fail if there was a busy process in more than 2 of the 'ps' invocations
+  if [[ $numBad -gt 2 ]]; then
+    echo "there are some running processes"
+    ps -eo pcpu,pid,user,args | grep "^\s*[0-9]" | sort -r | head -10
+    exit 1
+  fi
+}
+
 slaveBusy() {
   infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
   res=`curl -s $infoUrl | jsonq .idle | tr -d ' '`
@@ -90,6 +110,7 @@ else
     fi
   done
 
+  assertIdle
 
   mkdir -p $homedir/scalameter
   cd $homedir/scalameter
@@ -106,11 +127,16 @@ else
   fi
   git checkout origin/$branch
 
+
+  failBuild=false
+
   for ver in $scalaVersions; do
     dataDir=`readlink -f ../data/$ver`
     mkdir -p $dataDir
     git clean -dfx
-    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks"
+    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks" || {
+      failBuild=true
+    }
   done
 
 
@@ -124,5 +150,10 @@ else
       exit 1
     fi
   done
-  exit 0
+
+  if $failBuild; then
+    exit 1
+  else
+    exit 0
+  fi
 fi
