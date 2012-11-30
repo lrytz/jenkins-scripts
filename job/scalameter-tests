@@ -46,7 +46,7 @@ assertIdle() {
     numIdle=`ps -eo pcpu | grep "^\s*[0-9]" | sort -r | head -10 | grep "^\s*0" | wc -l`
 
     # chek if there's a process with > 0.x CPU load
-    if [[ numIdle -lt 10 ]]; then
+    if [[ $numIdle -lt 10 ]]; then
       numBad=$(($numBad + 1))
     fi
     sleep 0.1
