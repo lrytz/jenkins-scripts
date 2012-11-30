@@ -49,7 +49,7 @@ assertIdle() {
     if [[ $numIdle -lt 10 ]]; then
       numBad=$(($numBad + 1))
     fi
-    sleep 0.1
+    sleep 0.5
   done
   # fail if there was a busy process in more than 2 of the 'ps' invocations
   if [[ $numBad -gt 2 ]]; then
