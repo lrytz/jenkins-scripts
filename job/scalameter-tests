@@ -134,7 +134,7 @@ else
     dataDir=`readlink -f ../data/$ver`
     mkdir -p $dataDir
     git clean -dfx
-    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.CollectionBenchmarks" || {
+    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.fast.CollectionBenchmarks" || {
       failBuild=true
     }
   done
