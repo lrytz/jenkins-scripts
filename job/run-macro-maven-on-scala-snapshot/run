@@ -1,0 +1,15 @@
+#!/bin/bash -ex
+
+script_dir="$( cd "$( dirname "$0" )" && pwd )"
+
+runMaven () {
+  mvn "$@"
+}
+
+git clean -dfx
+if [[ -d maven-example ]]; then rm -rf maven-example; fi
+git clone git@github.com:scalamacros/maven-example.git maven-example
+cp out.check maven-example/out.check
+cd maven-example
+runMaven scala:run | tee out.txt
+grep "`cat out.check`" out.txt

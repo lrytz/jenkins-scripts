@@ -1,0 +1,7 @@
+#!/bin/bash -ex
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
+. $scriptsDir/publish-nightly
+
+publishNightly $publish "macro-paradise-nightly-main" $mainBuild "docs-master"
