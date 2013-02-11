@@ -9,10 +9,10 @@ then
   git checkout --detach -f origin/$mergebranch
   git log -n 1 --oneline HEAD
   git merge "pullreq/${pullrequest}"
-  echo Building commit $sha of #${pullrequest} (merged into ${mergebranch})
+  echo "Building commit $sha of #${pullrequest} (merged into ${mergebranch})."
   ./jenkins-scripts/job/$JOB
 else # build intermediate commits as-is
-  echo "Building $sha unless already in repository."
+  echo "Building $sha unless already merged into a (master-like) branch in the repository."
 
   HEADS=`git show-ref --dereference --abbrev=10 | grep refs/remotes/origin | cut -d' ' -f1 | sort -u`
   echo "Current repository heads:"
