@@ -1,0 +1,159 @@
+#!/bin/bash -ex
+
+# requires jsonq to be on the PATH
+# https://github.com/edmund-huber/jsonq
+
+# number of minutes to poll the slaves for busyness. if some of the slaves
+# are still busy after that time, the script quits.
+pollTime=60
+
+# sleep time in minutes
+sleepTime=5
+
+# homedir
+homedir=/localhome/jenkins
+
+# slaves to check for busyness
+slaves="lamppc49-a lamppc49-b lamppc49-c"
+
+# scala versions to build
+scalaVersions="2.10.1-SNAPSHOT 2.11.0-SNAPSHOT"
+
+# scalameter branch to pick
+branch="jenkins"
+
+# where to publish the output data folders
+# the current settings make it available on http://lampwww.epfl.ch/benchmarks/
+rsyncDest="scalatest@chara.epfl.ch:/home/wwwlamp/htdocs/benchmarks"
+
+# java version currently used
+javaVersion="1.7.0_09-b05"
+
+javaDir="/home/jenkins/apps/java-scalameter"
+export PATH=$javaDir/bin:$PATH
+
+if ! java -version 2>&1 | grep "$javaVersion"; then
+  ver=`java -version 2>&1`
+  echo "wrong java version. expected $javaVersion, found $ver"
+  exit 1
+fi
+
+
+assertIdle() {
+  numBad=0
+  for i in `seq 1 10`; do
+    # get the cpu load in percent of all processes, remove header, sort by load, count the ones where cpu load is 0.x
+    numIdle=`ps -eo pcpu | grep "^\s*[0-9]" | sort -r | head -10 | grep "^\s*0" | wc -l`
+
+    # chek if there's a process with > 0.x CPU load
+    if [[ $numIdle -lt 10 ]]; then
+      numBad=$(($numBad + 1))
+    fi
+    sleep 0.5
+  done
+  # fail if there was a busy process in more than 2 of the 'ps' invocations
+  if [[ $numBad -gt 2 ]]; then
+    echo "there are some running processes"
+    ps -eo pcpu,pid,user,args | grep "^\s*[0-9]" | sort -r | head -10
+    exit 1
+  fi
+}
+
+slaveBusy() {
+  infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
+  res=`curl -s $infoUrl | jsonq .idle | tr -d ' '`
+  if [[ $res == "true" ]]; then
+    return 1
+  else
+    # return 0 when $res is "false", but also when it has some other value.
+    # i.e. assume busy when there's an error retrieving the busyness.
+    return 0
+  fi
+}
+
+slaveOnline() {
+  infoUrl="https://scala-webapps.epfl.ch/jenkins/computer/$1/api/json"
+  res=`curl -s $infoUrl | jsonq .offline | tr -d ' '`
+  if [[ $res == "true" ]]; then
+    return 1
+  else
+    # return 0 when $res is "false", but also when it has some other value.
+    # i.e. assume online when there's an error retrieving the offline state.
+    return 0
+  fi
+}
+
+busy=true
+while $busy && [[ $pollTime -gt 0 ]]; do
+  busy=false
+  for s in $slaves; do
+    if slaveBusy $s; then
+      busy=true
+    fi
+  done
+
+  if $busy; then
+    pollTime=$(($pollTime - $sleepTime))
+    sleep $(($sleepTime * 60))
+  fi
+done
+
+
+if $busy; then
+  echo "slaves still busy, exiting"
+  exit 1
+else
+  for s in $slaves; do
+    if slaveOnline $s; then
+      echo "slave $s is not offline, aborting"
+      exit 1
+    fi
+  done
+
+  assertIdle
+
+  mkdir -p $homedir/scalameter
+  cd $homedir/scalameter
+
+  mkdir -p data
+
+  if [[ -d scalameter ]]; then
+    cd scalameter
+    git clean -dfx
+    git fetch -f origin
+  else
+    git clone git://github.com/axel22/scalameter.git
+    cd scalameter
+  fi
+  git checkout origin/$branch
+
+
+  failBuild=false
+
+  for ver in $scalaVersions; do
+    dataDir=`readlink -f ../data/$ver`
+    mkdir -p $dataDir
+    git clean -dfx
+    sbt -no-colors "set scalaVersion := \"$ver\"" "set resolvers += Resolver.sonatypeRepo(\"snapshots\")" "runsuite -verbose -CresultDir $dataDir -b org.scalameter.collections.fast.CollectionBenchmarks" || {
+      failBuild=true
+    }
+  done
+
+
+  cd ../data
+  rsync -az . $rsyncDest
+
+
+  for s in $slaves; do
+    if slaveOnline $s; then
+      echo "slave $s went online while running the tests, aborting"
+      exit 1
+    fi
+  done
+
+  if $failBuild; then
+    exit 1
+  else
+    exit 0
+  fi
+fi

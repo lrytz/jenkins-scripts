@@ -3,11 +3,11 @@
 publishNightly () {
   [[ $# -eq 4 ]] || {
     cat <<EOM
-publishNightly <publish> <jobName> <buildNr>
+publishNightly <publish> <jobName> <buildNr> <scaladocDir>
  - <publish> if not "true" then this function does nothing
  - <jobName> name of jenkins job that built the distribution
  - <buildNr> build number
- - <publishScaladoc> if "true" then the scaladoc artifacts are published
+ - <scaladocDir> the directory name to which scaladoc is published
 EOM
     exit 1
   }
@@ -15,7 +15,7 @@ EOM
   publish=$1
   jobName=$2
   buildNr=$3
-  publishScaladoc=$4
+  scaladocDir=$4
 
   [[ $publish == "true" ]] && {
     rm -rf jenkins-artifacts jenkins-artifacts.tgz
@@ -32,8 +32,8 @@ EOM
     # Archive Scala nightly distribution
     rsync -az dists/archives/ "$nightly_rsync_dest/distributions"
 
-    # publish scaladoc nightlies if we are in the master branch
-    [[ $publishScaladoc == "true" ]] && rsync -az build/scaladoc/ "$nightly_rsync_dest/docs"
+    # publish scaladoc nightlies
+    rsync -az build/scaladoc/ "$nightly_rsync_dest/$scaladocDir"
 
     # publish sbaz packages
     #[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"
