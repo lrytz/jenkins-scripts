@@ -23,7 +23,7 @@ else # build intermediate commits as-is
   do 
     git checkout --detach -f $commit
     git log -n 1 --oneline HEAD
-    echo Building commit $commit of #$pullrequest (targeting $mergebranch).
+    echo "Building commit $commit of #$pullrequest (targeting $mergebranch)."
     ./jenkins-scripts/job/$JOB
   done
 fi
