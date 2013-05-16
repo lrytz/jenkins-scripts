@@ -1,7 +1,4 @@
 #!/bin/bash -x
-# When building with the intent of ditributing artifacts to
-# artifactory, we expect $typesafeArtifactoryPassword to be set
-# by jenkins as an environment variable.
 
 publish=$1
 artifactsDir=$2
@@ -18,9 +15,7 @@ if [[ $publish == "publish" ]] ; then
 fi
 publishState=$?
 if [[ $publish == "publishMaven" ]]; then
-    # this a ssumes an environment variable with a
-    # typesafe.artifactory.com password is set up
-    $scriptsDir/publish-artifactory $typesafeArtifactoryPassword
+    $scriptsDir/publish-artifactory
 fi
 publishStateMaven=$?
 
