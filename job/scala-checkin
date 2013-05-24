@@ -5,16 +5,22 @@ artifactsDir=$2
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-antArgs="-Darchives.skipxz=true" $scriptsDir/build
+# the next 2 lines assume `pwd` == the scala checkout site
+commithash="$(git rev-parse HEAD | cut -c 1-7)"
+antArgs="-Darchives.skipxz=true -Dbuild.release=true -Dmaven.version.suffix=\"-$commithash-SNAPSHOT\"" $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then
-  $scriptsDir/publish-checkin $artifactsDir
+    $scriptsDir/publish-checkin $artifactsDir
 fi
 publishState=$?
+if [[ $publish == "publishMaven" ]]; then
+    $scriptsDir/publish-artifactory
+fi
+publishStateMaven=$?
 
 # i'm not a bash programmer.
-if [[ $buildState == 0  && $publishState == 0 ]] ; then
+if (( !($buildState || $publishState || $publishStateMaven) )) ; then
   exit 0
 else
   exit 1

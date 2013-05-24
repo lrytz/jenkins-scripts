@@ -10,7 +10,7 @@ then
   git log -n 1 --oneline HEAD
   git merge "pullreq/${pullrequest}"
   echo "Building commit $sha of #${pullrequest} (merged into ${mergebranch})."
-  ./jenkins-scripts/job/$JOB
+  ./jenkins-scripts/job/$JOB publishMaven
 else # build intermediate commits as-is
   echo "Building $sha unless already merged into a (master-like) branch in the repository."
 
