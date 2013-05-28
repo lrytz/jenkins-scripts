@@ -5,9 +5,14 @@ artifactsDir=$2
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-# the next 2 lines assume `pwd` == the scala checkout site
-commithash="$(git rev-parse HEAD | cut -c 1-7)"
-antArgs="-Darchives.skipxz=true -Dbuild.release=true -Dmaven.version.suffix=\"-$commithash-SNAPSHOT\"" $scriptsDir/build
+if [ -z $sha ]; then
+  echo "Did not receive a sha environment variable. Should be exported by the jenkins job."
+  exit 1
+fi
+
+# build to publish with a maven suffix that encodes the first 7 characters of the sha of the commit that we're validating
+# (don't use the sha of the merge commit as we don't have an easy way of passing that down the validation chain)
+antArgs="-Darchives.skipxz=true -Dbuild.release=true -Dmaven.version.suffix=\"-${sha:0:7}-SNAPSHOT\"" $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then
