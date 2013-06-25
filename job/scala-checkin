@@ -19,13 +19,9 @@ if [[ $publish == "publish" ]] ; then
     $scriptsDir/publish-checkin $artifactsDir
 fi
 publishState=$?
-if [[ $publish == "publishMaven" ]]; then
-    $scriptsDir/publish-artifactory
-fi
-publishStateMaven=$?
 
 # i'm not a bash programmer.
-if (( !($buildState || $publishState || $publishStateMaven) )) ; then
+if (( !($buildState || $publishState) )) ; then
   exit 0
 else
   exit 1
