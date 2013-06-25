@@ -10,7 +10,7 @@ if [ -z $sha ]; then
 fi
 
 gitClean
-./pull-binary-libs
+./pull-binary-libs.sh || ./pull-binary-libs
 
 # don't run rests -- they are run downstream
 # TODO: can we move doc generation downstream as well?
