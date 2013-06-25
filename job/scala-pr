@@ -1,0 +1,19 @@
+#!/bin/bash -x
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+
+. $scriptsDir/common
+
+if [ -z $sha ]; then
+  echo "Did not receive a sha environment variable. Should be exported by the jenkins job."
+  exit 1
+fi
+
+gitClean
+./pull-binary-libs
+
+# don't run rests -- they are run downstream
+# TODO: can we move doc generation downstream as well?
+# build to (later) publish with a maven suffix that encodes the first 7 characters of the sha of the commit that we're validating
+# (don't use the sha of the merge commit as we don't have an easy way of passing that down the validation chain)
+ant "-Darchives.skipxz=true -Dmaven.version.suffix=\"-${sha:0:7}-SNAPSHOT\"" distpack-opt
