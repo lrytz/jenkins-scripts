@@ -1,0 +1,9 @@
+#!/bin/bash -x
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+
+. $scriptsDir/common
+
+./pull-binary-libs.sh || ./pull-binary-libs
+
+ant test-opt
