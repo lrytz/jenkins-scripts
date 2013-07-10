@@ -40,6 +40,6 @@ EOM
 
     # push to the maven repository
     cd dists/maven/latest
-    ant deploy.snapshot -Dsettings.file=$maven_settings_file
+    ant deploy -Dsettings.file=$maven_settings_file
   }
 }
