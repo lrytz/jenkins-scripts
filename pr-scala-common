@@ -35,14 +35,11 @@ SEDARGS="-n$(if (echo "a" | sed -nE "s/a/b/" &> /dev/null); then echo E; else ec
 #
 # Updates or clones the checkout of <reference> taken from the
 # git repo at <url> into the local directory
-# <directory>. <reference> should not be older than the last <n>
-# commits from the top of the repo. at creation of the checkout.
-# All arguments are required.
+# <directory> and cleans the checkout.
 #
 # :end docstring:
 
 function getOrUpdate(){
-    local deepen=''
     if [ ! -d $1 ]; then
         git clone --depth 1 $2
     fi
@@ -51,6 +48,8 @@ function getOrUpdate(){
     git fetch $2 $3
 
     git checkout -q FETCH_HEAD
+
+    git clean -fxd
 
     git log --oneline -1
 
