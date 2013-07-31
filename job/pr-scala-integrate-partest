@@ -52,8 +52,12 @@ preparesbt
 # Build and test partest
 #####################################################
 
+curl -o $BASEDIR/sbt-launch.jar -s http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.0-RC1/sbt-launch.jar
+
+SBT_JAVA_OPTS="-XX:MaxPermSize=384m -Xmx4096M -XX:+CMSClassUnloadingEnabled -XX:ReservedCodeCacheSize=256m -Dsbt.global.base=$SBT_HOME -Dsbt.ivy.home=$IVY_CACHE -jar $BASEDIR/sbt-launch.jar"
+
 (cd $PARTESTDIR &&
- sbt $SBT_ARGS "reboot full" clean "set every scalaVersion := \"$SCALAVERSION-$SCALAHASH-SNAPSHOT\"" "show scala-instance" publish-local test)
+ java $SBT_JAVA_OPTS "reboot full" clean "set every scalaVersion := \"$SCALAVERSION-$SCALAHASH-SNAPSHOT\"" "show scala-instance" publish-local test)
 
 # Remove .sbt/repositories scaffolding
 #cleanupsbt
