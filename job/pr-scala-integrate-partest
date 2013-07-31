@@ -1,0 +1,59 @@
+#!/bin/bash -e
+
+####################################################################
+# Build the whole chain from Scala (presumably downloaded from     #
+# artifactory) to Scala-IDE, cloning or fetching checkouts of the  #
+# elements of said chain in $BASEDIR.                              #
+####################################################################
+
+scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
+. $scriptsDir/../pr-scala-common
+
+
+#####################
+# BEGIN MAIN SCRIPT #
+#####################
+
+main $@
+
+PARTESTDIR="$BASEDIR/scala-partest/"
+
+cd $BASEDIR
+
+PARTESTURL="https://github.com/scala/scala-partest.git"
+
+#####################################################
+# Clone repos
+#####################################################
+
+# this depends on the fact that the default clone checkout is the
+# dev branch (master or the local equivalent)
+getOrUpdate $PARTESTDIR $PARTESTURL "HEAD"
+
+#####################################################
+# Set versions
+#####################################################
+
+set_scala_version
+
+#####################################################
+# Publish scala
+#####################################################
+
+#publish_scala
+
+#####################################################
+# Prepare SBT
+#####################################################
+
+preparesbt
+
+#####################################################
+# Build and test partest
+#####################################################
+
+(cd $PARTESTDIR &&
+ sbt $SBT_ARGS "reboot full" clean "set every scalaVersion := \"$SCALAVERSION-$SCALAHASH-SNAPSHOT\"" "show scala-instance" publish-local test)
+
+# Remove .sbt/repositories scaffolding
+#cleanupsbt
