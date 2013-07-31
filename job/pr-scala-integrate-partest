@@ -40,7 +40,7 @@ set_scala_version
 # Publish scala
 #####################################################
 
-#publish_scala
+publish_scala
 
 #####################################################
 # Prepare SBT
