@@ -6,4 +6,4 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 ./pull-binary-libs.sh || ./pull-binary-libs
 
-ant test-opt
+ant test-opt # TODO: add ant target that doesn't run stability test
