@@ -112,7 +112,7 @@ function sbinarybuild(){
     if [ -f project/build.properties ]; then
         OLD_BUILDPROPERTIES_FILE=$(mktemp -t buildpropsXXX)
         cat project/build.properties > $OLD_BUILDPROPERTIES_FILE
-        sed -i sed $SEDARGS_ARGS "s/sbt\.version=.*/sbt.version=$SBT_BOOTSTRAP_VERSION/" project/build.properties
+        sed -i $SEDARGS_ARGS "s/sbt\.version=.*/sbt.version=$SBT_BOOTSTRAP_VERSION/" project/build.properties
     else
         echo "sbt.version=$SBT_BOOTSTRAP_VERSION" > project/build.properties
     fi
@@ -182,7 +182,7 @@ function sbtbuild(){
     if [ -f project/build.properties ]; then
         OLD_BUILDPROPERTIES_FILE=$(mktemp -t buildpropsXXX)
         cat project/build.properties > $OLD_BUILDPROPERTIES_FILE
-        sed -i sed $SEDARGS_ARGS "s/sbt\.version=.*/sbt.version=$SBT_BOOTSTRAP_VERSION/" project/build.properties
+        sed -i $SEDARGS_ARGS "s/sbt\.version=.*/sbt.version=$SBT_BOOTSTRAP_VERSION/" project/build.properties
     else
         echo "sbt.version=$SBT_BOOTSTRAP_VERSION" > project/build.properties
     fi
