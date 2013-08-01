@@ -8,7 +8,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 # find src/ -exec touch -m \{} \;
 
 # put build folder from upstream pr-scala-distpack in place
-# -m sets modification to now
+# -m sets modification to now, so that we don't rebuild (sources will have older modification time)
 rm -rf build
 tar -mxz -f build.tgz
 
