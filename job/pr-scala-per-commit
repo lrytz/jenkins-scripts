@@ -2,13 +2,13 @@
 
 cd $WORKSPACE/scala/
 
-git fetch origin
 git fetch origin "+pull/${pullrequest}/head:pullreq/${pullrequest}"
 
 # merge the head of the PR into the target mergebranch to make sure it integrates
 if [ "EMPTY$(git rev-list $sha..pullreq/${pullrequest})" = "EMPTY" ]
 then 
   echo "Merging head $sha of #${pullrequest} into ${mergebranch}."
+  git fetch origin --depth 10000 # we once did a shallow clone and jenkins is making us pay for it (unchecking shallow clone does not "unshallow" it)
   git fetch origin $mergebranch
   git checkout --detach -f FETCH_HEAD
   git clean -fxd
@@ -17,6 +17,7 @@ then
   (cd $WORKSPACE/ && ./jenkins-scripts/job/$JOB_NAME)
 else # build intermediate commits as-is
   echo "Building $sha unless already merged into a (master-like) branch in the repository."
+  git fetch origin
 
   HEADS=`git show-ref --dereference --abbrev=10 | grep refs/remotes/origin | cut -d' ' -f1 | sort -u`
   echo "Current repository heads:"
