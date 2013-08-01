@@ -9,6 +9,8 @@ if [ -z $sha ]; then
   exit 1
 fi
 
+cd $WORKSPACE/scala/
+
 gitClean
 ./pull-binary-libs.sh || ./pull-binary-libs
 
@@ -22,3 +24,4 @@ ant -Darchives.skipxz=true -Dmaven.version.suffix="-${sha:0:7}-SNAPSHOT" distpac
 
 # archive artifacts...
 $scriptsDir/archive-checkin
+tar czf $WORKSPACE/jenkins-artifacts/build.tgz build/

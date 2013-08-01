@@ -4,11 +4,11 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 . $scriptsDir/common
 
-cd scala
+cd $WORKSPACE/scala
 
 # put build folder from upstream pr-scala-distpack in place
 # -m sets modification to now, so that we don't rebuild (sources will have older modification time)
-tar -mxz -f build.tgz
+tar -mxz -f $WORKSPACE/build.tgz
 
 ./pull-binary-libs.sh || ./pull-binary-libs
 

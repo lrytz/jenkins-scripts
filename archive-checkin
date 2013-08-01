@@ -7,8 +7,8 @@
 
 revision=`git rev-parse HEAD`
 
-rm -rf jenkins-artifacts
-mkdir jenkins-artifacts
+rm -rf $WORKSPACE/jenkins-artifacts
+mkdir $WORKSPACE/jenkins-artifacts
 
 
 
@@ -42,7 +42,7 @@ oldAnt () {
 
 buildPack () {
   [[ -d build/pack ]] && {
-    tar czf jenkins-artifacts/pack.tgz -C build pack
+    tar czf $WORKSPACE/jenkins-artifacts/pack.tgz -C build pack
   }
 }
 
@@ -50,13 +50,13 @@ distsLatest () {
   [[ -L dists/latest ]] && {
     # "tar -h" follows symlinks. This helps here so we don't have
     # to find out the distribution's folder name.
-    tar czhf jenkins-artifacts/dist.tgz -C dists latest
+    tar czhf $WORKSPACE/jenkins-artifacts/dist.tgz -C dists latest
   }
 }
 
 distsMavenLatest () {
   [[ -d dists/maven/latest ]] && {
-    tar czhf jenkins-artifacts/maven.tgz -C dists/maven latest
+    tar czhf $WORKSPACE/jenkins-artifacts/maven.tgz -C dists/maven latest
   }
 }
 
