@@ -36,6 +36,11 @@ getOrUpdate $PARTESTDIR $PARTESTURL "HEAD"
 
 set_scala_version
 
+if [ "$SCALAMINOR" = "11" ]
+    then echo "Integrating with Scala 2.11."
+    else echo "Not integrating with older Scala."; exit 0
+fi
+
 #####################################################
 # Publish scala
 #####################################################
