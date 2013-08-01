@@ -9,9 +9,10 @@ git fetch origin "+pull/${pullrequest}/head:pullreq/${pullrequest}"
 if [ "EMPTY$(git rev-list $sha..pullreq/${pullrequest})" = "EMPTY" ]
 then 
   echo "Merging head $sha of #${pullrequest} into ${mergebranch}."
-  git checkout --detach -f origin/$mergebranch
-  git log -n 1 --oneline HEAD
-  git merge "pullreq/${pullrequest}"
+  git fetch origin $mergebranch
+  git checkout --detach -f FETCH_HEAD
+  git clean -fxd
+  git merge $sha
   echo "Building commit $sha of #${pullrequest} (merged into ${mergebranch})."
   (cd $WORKSPACE/ && ./jenkins-scripts/job/$JOB_NAME)
 else # build intermediate commits as-is
