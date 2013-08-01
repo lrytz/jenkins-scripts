@@ -4,12 +4,10 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 . $scriptsDir/common
 
-# make sure we don't rebuild anything, give source files older modification time than build (extracted next)
-# find src/ -exec touch -m \{} \;
+cd scala
 
 # put build folder from upstream pr-scala-distpack in place
 # -m sets modification to now, so that we don't rebuild (sources will have older modification time)
-rm -rf build
 tar -mxz -f build.tgz
 
 ./pull-binary-libs.sh || ./pull-binary-libs

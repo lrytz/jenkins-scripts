@@ -1,5 +1,12 @@
 #!/bin/bash -e
 
+SBINARYURL="https://github.com/harrah/sbinary.git"
+SBTURL="https://github.com/sbt/sbt.git"
+SCALARIFORMURL="https://github.com/mdr/scalariform.git"
+REFACURL="https://github.com/scala-ide/scala-refactoring.git"
+IDEURL="https://github.com/scala-ide/scala-ide.git"
+
+
 ####################################################################
 # Build the whole chain from Scala (presumably downloaded from     #
 # artifactory) to Scala-IDE, cloning or fetching checkouts of the  #
@@ -9,12 +16,11 @@
 scriptsDir="$( cd "$( dirname "$0" )" && pwd )"
 source $scriptsDir/../pr-scala-common
 
-
 #####################
 # BEGIN MAIN SCRIPT #
 #####################
 
-main $@
+main
 
 SBTDIR="$BASEDIR/sbt/"
 SBINARYDIR="$BASEDIR/sbinary/"
@@ -24,11 +30,11 @@ IDEDIR="$BASEDIR/scala-ide/"
 
 cd $BASEDIR
 
-SBINARYURL="https://github.com/harrah/sbinary.git"
-SBTURL="https://github.com/sbt/sbt.git"
-SCALARIFORMURL="https://github.com/mdr/scalariform.git"
-REFACURL="https://github.com/scala-ide/scala-refactoring.git"
-IDEURL="https://github.com/scala-ide/scala-ide.git"
+# put artifacts from upstream pr-checking-per-commit in place
+mkdir -p scala/dists/maven
+cp build.number scala/
+tar -C scala/dists/maven -xvz -f maven.tgz
+
 
 #####################################################
 # Clone repos
