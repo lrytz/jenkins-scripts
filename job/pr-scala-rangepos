@@ -1,0 +1,25 @@
+#!/bin/bash -x
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+
+. $scriptsDir/common
+
+if [ -z $sha ]; then
+  echo "Did not receive a sha environment variable. Should be exported by the jenkins job."
+  exit 1
+fi
+
+cd $WORKSPACE/scala/
+
+gitClean
+
+./pull-binary-libs.sh
+
+# Build 'locker' without "-Yrangepos", because 'starr' might not have the
+# latest rangepos fixes.
+scalacArgs="-Dscalac.args=\"-Yrangepos\" -Dpartest.scalac_opts=\"-Yrangepos\""
+ant -Dscalac.args.optimise=-optimise locker.done
+ant $scalacArgs build-opt
+
+# No need to run the stability tests
+ant -Dscalac.args.optimise=-optimise $scalacArgs test.suite test.continuations.suite test.scaladoc
