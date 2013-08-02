@@ -21,7 +21,7 @@ PARTESTURL="https://github.com/scala/scala-partest.git"
 cd $BASEDIR
 
 mkdir -p scala/dists/maven
-mv build.number scala/
+cp build.number scala/
 tar -C scala/dists/maven -xvz -f maven.tgz
 
 #####################################################
