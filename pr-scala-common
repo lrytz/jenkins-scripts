@@ -206,9 +206,13 @@ function maven_fail_detect() {
 
 
 ######################################################
+# Wipe $LOCAL_M2_REPO/org/scala-lang (to avoid accumulating old scala builds)
 # Publish pre-built scala to local maven repo        #
 ######################################################
 function publish_scala() {
+  say "### Wiping $LOCAL_M2_REPO/org/scala-lang"
+  rm -rf $LOCAL_M2_REPO/org/scala-lang
+
   say "### deploying Scala from $SCALADIR/dists/maven/latest"
   (cd $SCALADIR/dists/maven/latest && 
    test ant -Dlocal.snapshot.repository="$LOCAL_M2_REPO" -Dmaven.version.number="$SCALAVERSION-$SCALAHASH-SNAPSHOT" deploy.local) | tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
