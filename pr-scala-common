@@ -24,6 +24,7 @@ SBT_HOME="$BASEDIR/.sbt"
 mkdir -p $SBT_HOME
 IVY_CACHE="$BASEDIR/.ivy2"
 mkdir -p $IVY_CACHE
+rm -rf $IVY_CACHE/cache/org.scala-lang
 
 
 # detect sed version and how to enable extended regexes
