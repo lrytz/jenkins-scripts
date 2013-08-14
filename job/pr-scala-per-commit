@@ -1,5 +1,13 @@
 #!/bin/bash -e
 
+# if there's a mergetarget file (created by pr-scala-distpack, and copied as artifacts by downstream jobs),
+# use that as the sha to merge to, so that downstream jobs from pr-scala-distpack
+# use the same sha for their $mergebranch ref as the distpack job itself
+# this assumes $mergebranch increases strictly monotonically over time
+# (e.g, whatever master was during distpack, that sha will still be fetched by fetch $mergebranch later,
+# even though the resulting FETCH_HEAD will have moved past $mergetarget)
+mergetarget=$( cat $WORKSPACE/jenkins-artifacts/mergetarget || echo FETCH_HEAD )
+
 cd $WORKSPACE/scala/
 
 git fetch origin "+pull/${pullrequest}/head:pullreq/${pullrequest}"
@@ -10,7 +18,9 @@ then
   echo "Merging head $sha of #${pullrequest} into ${mergebranch}."
   git fetch origin --depth 10000 # we once did a shallow clone and jenkins is making us pay for it (unchecking shallow clone does not "unshallow" it)
   git fetch origin $mergebranch
-  git checkout --detach -f FETCH_HEAD
+  # if no mergetarget file present, save it for downstream jobs
+  [[ -f $WORKSPACE/jenkins-artifacts/mergetarget ]] || (mkdir -p $WORKSPACE/jenkins-artifacts/ && git rev-parse FETCH_HEAD > $WORKSPACE/jenkins-artifacts/mergetarget)
+  git checkout --detach -f $mergetarget
   git clean -fxd
   git merge $sha
   echo "Building commit $sha of #${pullrequest} (merged into ${mergebranch})."
@@ -28,7 +38,7 @@ else # build intermediate commits as-is
   do 
     git checkout --detach -f $commit
     git log -n 1 --oneline HEAD
-    echo "Building commit $commit of #$pullrequest (targeting $mergebranch)."
+    echo "Building commit $commit of #$pullrequest (targeting $mergetarget)."
     (cd $WORKSPACE/ && ./jenkins-scripts/job/$JOB_NAME)
   done
 fi
