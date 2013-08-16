@@ -1,0 +1,40 @@
+#!/bin/bash -ex
+
+# STEP 1: INITIALIZE
+script_dir="$( cd "$( dirname "$0" )" && pwd )"
+scriptsDir="$( cd "$( dirname "$0" )/../.." && pwd )"
+. $scriptsDir/common
+runSbt () {
+  sbt -Dmaven.settings.file="$maven_settings_file" -Dparadise.scala.home="$script_dir/scala/build/pack" -no-colors -no-share -sbt-launch-dir "$script_dir/project/launcher" "$@"
+}
+git clean -dfx
+if [[ -d paradise ]]; then rm -rf paradise; fi
+git clone git@github.com:scalamacros/paradise.git -b hooked paradise
+if [[ -d scala ]]; then rm -rf scala; fi
+git clone git@github.com:xeno-by/scala.git -b topic/paradise-hooks scala
+
+# STEP 2: SELECT SCALAC BRANCH AND APPLY OUR PATCHES
+# TODO: make all the tests pass
+# current failures are quite minor, but it's still annoying
+cd "$script_dir/scala"
+git checkout topic/paradise-hooks
+git apply "$script_dir/test_fixup.patch"
+
+# STEP 3: BUILD CUSTOM SCALAC TO THEN BUILD OUR PLUGIN
+cd "$script_dir/scala"
+./pull-binary-libs.sh
+ant locker.done # we might be binary incompatible with starr, so no plugin when building locker
+# TODO: don't know what's going on, but with the plugin enabled Universe.reify stops being recognized as a macro
+# well, I actually I have a suspicion that hijacking fastTrack might lead to Universe.reify not being marked as MACRO
+# but I've disabled the hijack when compiling scala-reflect.jar, and the problem still persists
+# ant "-Dscalac.args=\"-Xplugin:$plugin\"" build-opt test.bc
+ant build
+
+# STEP 4: RUN THE PLUGIN TESTS
+cd "$script_dir/paradise"
+runSbt "project tests" test
+plugin=( $(pwd)/plugin/target/scala-2.11.0-SNAPSHOT/macro-paradise_*.jar )
+[[ ! -f "$plugin" ]] && exit 1
+
+# STEP 5: RUN THE SCALAC TESTS
+ant "-Dscalac.args.optimise=\"-Xplugin:$plugin\"" test.suite
