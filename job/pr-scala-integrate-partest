@@ -30,7 +30,7 @@ tar -C scala/dists/maven -xvz -f maven.tgz
 
 # this depends on the fact that the default clone checkout is the
 # dev branch (master or the local equivalent)
-getOrUpdate $PARTESTDIR $PARTESTURL "v1.0-RC1"
+getOrUpdate $PARTESTDIR $PARTESTURL "v1.0-RC4"
 
 #####################################################
 # Set versions
