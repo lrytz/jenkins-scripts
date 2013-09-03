@@ -1,6 +1,8 @@
 #!/bin/bash -e
 
-DBUILDURL="https://github.com/typesafehub/sbt-builds-for-ide.git"
+# Set DBUILDURL (and BRANCH) good defaults if not set (or null)
+: ${DBUILDURL:="https://github.com/typesafehub/sbt-builds-for-ide.git"}
+: ${DBUILDBRANCH:="master"}
 SCALARIFORMURL="https://github.com/mdr/scalariform.git"
 REFACURL="https://github.com/scala-ide/scala-refactoring.git"
 IDEURL="https://github.com/scala-ide/scala-ide.git"
@@ -40,7 +42,7 @@ tar -C scala/dists/maven -xvz -f maven.tgz
 
 # this depends on the fact that the default clone checkout is the
 # dev branch (master or the local equivalent)
-getOrUpdate $DBUILDDIR $DBUILDURL "HEAD"
+getOrUpdate $DBUILDDIR $DBUILDURL $DBUILDBRANCH
 getOrUpdate $SCALARIFORMDIR $SCALARIFORMURL "HEAD"
 getOrUpdate $REFACDIR $REFACURL "HEAD"
 getOrUpdate $IDEDIR $IDEURL "HEAD"
@@ -51,16 +53,10 @@ getOrUpdate $IDEDIR $IDEURL "HEAD"
 
 set_scala_version
 
-# TODO : much better version detection: this is sensitive to
-# the order in which the profiles are declared for sbt !
-# WARNING : This picks up the second to last occurrence of `<sbt.version>` inside pom.xml
-# Once we get rid of sbt-legacy there will be just one sbt.version
-# <--- this is super sensitive stuff ---->
-SBTVERSION=$(sed $SEDARGS 's/[^t]*<sbt\.version>([0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z]+[0-9]+)?(-SNAPSHOT)?)<\/sbt\.version>.*/\1/p' $IDEDIR/pom.xml|tail -n 2|head -n 1)
-
-# <--- this is super sensitive stuff ---->
-if [ -z $SBTVERSION ]; then exit 125; fi
-echo "### SBT version detected: \"$SBTVERSION\""| tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
+#
+# NOTE: This should be in sync with what dbuild publishes and what the IDE
+#       specifies in pom.xml
+SBTVERSION=0.13.0
 
 say "### logfile $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log"
 
@@ -81,6 +77,7 @@ publish_scala
 # :docstring dbuild_zincbuild:
 # Usage: dbuild_zincbuild
 # Builds incremental compiler components for the IDE using dbuild, and makes them available in maven.
+# Configuration is retrieved from $DBUILDURL
 # :end docstring:
 
 function dbuild_zincbuild()
@@ -88,7 +85,10 @@ function dbuild_zincbuild()
     say "### Running dbuild"
     cd ${DBUILDDIR}
 
-    SCALA_VERSION=$SCALAVERSION-$SCALAHASH-SNAPSHOT \
+    # Pass the scala version to dbuild (note the `_`),
+    # the target repository for sbt artifacts,
+    # and the local maven repository (where this particular Scala version can be found)
+    SCALA_VERSION=$SCALA_MAVEN_VERSION \
     PUBLISH_REPO=file://$LOCAL_M2_REPO \
     LOCAL_M2_REPO=$LOCAL_M2_REPO bin/dbuild sbt-on-${SCALASHORT}.x
 }
@@ -131,7 +131,7 @@ function scalariformbuild()
 
     GIT_HASH=$(git rev-parse HEAD)
 
-    mvn $GENMVNOPTS -Pscala-$SCALASHORT.x -Dscala.version=$SCALAVERSION-$SCALAHASH-SNAPSHOT -Dmaven.repo.local=$LOCAL_M2_REPO clean install
+    mvn $GENMVNOPTS -Pscala-$SCALASHORT.x -Dscala.version=$SCALA_MAVEN_VERSION -Dmaven.repo.local=$LOCAL_M2_REPO clean install
 }
 
 cd $SCALARIFORMDIR
@@ -156,7 +156,7 @@ fi
 # have to rebuild it every time.
 cd $REFACDIR
 (test git clean -fxd) || exit 125
-(test mvn $GENMVNOPTS -DskipTests=false -Dscala.version=$SCALAVERSION-$SCALAHASH-SNAPSHOT -Pscala-$SCALASHORT.x -Dgpg.skip=true clean install) | tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
+(test mvn $GENMVNOPTS -DskipTests=false -Dscala.version=$SCALA_MAVEN_VERSION -Pscala-$SCALASHORT.x -Dgpg.skip=true clean install) | tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
 refac_return=${PIPESTATUS[0]}
 if [ $refac_return -ne 0 ]; then
     say "### SCALA-REFACTORING FAILED !"
@@ -177,7 +177,7 @@ set -e
 cd $IDEDIR
 (test git clean -fxd) || exit 125
 # -Dtycho.disableP2Mirrors=true -- when mirrors are slow
-(test ./build-all.sh $GENMVNOPTS -Psbt-new -PretryFlakyTests -DskipTests=false -Dscala.version=$SCALAVERSION-$SCALAHASH-SNAPSHOT -Pscala-$SCALASHORT.x -Peclipse-juno clean install) | tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
+(test ./build-all.sh $GENMVNOPTS -Psbt-new -PretryFlakyTests -DskipTests=false -Dscala.version=$SCALA_MAVEN_VERSION -Pscala-$SCALASHORT.x -Peclipse-juno clean install) | tee -a $LOGGINGDIR/compilation-$SCALADATE-$SCALAHASH.log
 ide_return=${PIPESTATUS[0]}
 if [ $ide_return -ne 0 ]; then
     say "### SCALA-IDE FAILED !"
