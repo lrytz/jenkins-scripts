@@ -113,7 +113,7 @@ if [ $sbtres -ne 0 ]; then
     fi
 fi
 
-MAVEN_OPTS="-Xmx2048m -XX:MaxPermSize=512m"
+export MAVEN_OPTS="-Xmx2048m -XX:MaxPermSize=512m"
 
 ########################
 # Building scalarifom  #
