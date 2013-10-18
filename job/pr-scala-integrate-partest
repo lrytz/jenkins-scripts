@@ -59,7 +59,7 @@ preparesbt
 # Build and test partest
 #####################################################
 
-curl -o $BASEDIR/sbt-launch.jar -s http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.0-RC5/sbt-launch.jar
+curl -o $BASEDIR/sbt-launch.jar -s http://repo.typesafe.com/typesafe/ivy-releases/org.scala-sbt/sbt-launch/0.13.0/sbt-launch.jar
 
 SBT_JAVA_OPTS="-XX:MaxPermSize=384m -Xmx4096M -XX:+CMSClassUnloadingEnabled -XX:ReservedCodeCacheSize=256m -Dsbt.global.base=$SBT_HOME -Dsbt.ivy.home=$IVY_CACHE -Dsbt.log.noformat=true -jar $BASEDIR/sbt-launch.jar"
 
