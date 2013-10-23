@@ -17,7 +17,7 @@ homedir=/localhome/jenkins
 slaves="lamppc49-a lamppc49-b lamppc49-c"
 
 # scala versions to build
-scalaVersions="2.10.3-SNAPSHOT 2.11.0-SNAPSHOT"
+scalaVersions="2.11.0-SNAPSHOT"
 
 # scalameter branch to pick
 branch="jenkins"
