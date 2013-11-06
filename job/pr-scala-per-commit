@@ -7,8 +7,8 @@ case $JOB_NAME in
     echo "Deleting stale mergetarget -- will be created by this job."
     rm -f $WORKSPACE/mergetarget
     mergetarget="FETCH_HEAD" ;;
-  # if there's a mergetarget file (created by pr-scala-distpack, and copied as artifacts by downstream jobs),
-  # use that as the sha to merge to, so that downstream jobs from pr-scala-distpack
+  # if there's a mergetarget file (created by pr-scala-publish-core, and copied as artifacts by downstream jobs),
+  # use that as the sha to merge to, so that downstream jobs from pr-scala-publish-core
   # use the same sha for their $mergebranch ref as the distpack job itself
   # this assumes $mergebranch increases strictly monotonically over time
   # (e.g, whatever master was during distpack, that sha will still be fetched by fetch $mergebranch later,

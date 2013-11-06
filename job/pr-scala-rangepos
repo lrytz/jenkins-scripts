@@ -3,7 +3,6 @@
 echo "Dry run? $prDryRun"
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
-
 . $scriptsDir/common
 
 if [ -z $sha ]; then

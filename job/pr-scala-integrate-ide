@@ -1,4 +1,13 @@
-#!/bin/bash -e
+#!/bin/bash -ex
+# PRE:
+#  - vars: sha
+#  - artifacts: versions.properties (parsed for maven_version_number)
+#  - on pr maven repo: Scala version $maven_version_number
+
+scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
+. $scriptsDir/common
+. $scriptsDir/pr-scala-common
+parse_properties versions.properties
 
 BASEDIR=`pwd`
 UBERBUILD_URL="https://github.com/scala-ide/uber-build.git"
@@ -16,31 +25,21 @@ else
   git clone $UBERBUILD_URL
 fi
 
-# detect sed version and how to enable extended regexes
-SEDARGS="-n$(if (echo "a" | sed -nE "s/a/b/" &> /dev/null); then echo E; else echo r; fi)"
+# pass prRepoUrl in, which uber-build passes along to dbuild (in sbt-builds-for-ide)
+# the "-P pr-scala" maven arg accomplishes the same thing for maven (directly used in uber-build)
+prRepoUrl="$prRepoUrl"\
+  MAVEN_ARGS="-P pr-scala"\
+    $UBERBUILD_DIR/uber-build.sh $UBERBUILD_DIR/config/validator.conf $sha $maven_version_number
 
 
-# Usage: set_versions
-# Computes the Scala version found in file `build.number`
-function set_scala_version(){
-
-    if [ ! -f build.number ]; then
-        say "No build.number found in $SCALADIR."
-        exit 1
-    else
-        SCALAMAJOR=$(sed $SEDARGS 's/version.major=([0-9])/\1/p' build.number)
-        SCALAMINOR=$(sed $SEDARGS 's/version.minor=([0-9])/\1/p' build.number)
-        SCALAPATCH=$(sed $SEDARGS 's/version.patch=([0-9])/\1/p' build.number)
-    fi
-
-    SCALA_VERSION="$SCALAMAJOR.$SCALAMINOR.$SCALAPATCH"
-    if [[ -z $SCALA_VERSION ]]; then
-        exit 125
-    fi
-
-    echo "### SCALA version detected : $SCALA_VERSION"
-}
-
-set_scala_version
-
-$UBERBUILD_DIR/uber-build.sh $UBERBUILD_DIR/config/validator.conf $sha $SCALA_VERSION
+# this assumes ~/.m2/settings.xml contains
+# <profile>
+#   <id>pr-scala</id>
+#   <repositories>
+#     <repository>
+#       <id>pr-snapshots</id>
+#       <name>Scala PR validation snapshots</name>
+#       <url>$prRepoUrl</url>
+#     </repository>
+#   </repositories>
+# </profile>
