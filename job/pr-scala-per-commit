@@ -1,12 +1,19 @@
 #!/bin/bash -e
 
-# if there's a mergetarget file (created by pr-scala-distpack, and copied as artifacts by downstream jobs),
-# use that as the sha to merge to, so that downstream jobs from pr-scala-distpack
-# use the same sha for their $mergebranch ref as the distpack job itself
-# this assumes $mergebranch increases strictly monotonically over time
-# (e.g, whatever master was during distpack, that sha will still be fetched by fetch $mergebranch later,
-# even though the resulting FETCH_HEAD will have moved past $mergetarget)
-mergetarget=$( cat $WORKSPACE/mergetarget || echo FETCH_HEAD )
+case $JOB_NAME in
+  pr-scala-distpack|pr-scala-rangepos)
+    echo "Deleting stale mergetarget -- will be created by this job."
+    rm -f $WORKSPACE/mergetarget
+    mergetarget="FETCH_HEAD" ;;
+  # if there's a mergetarget file (created by pr-scala-distpack, and copied as artifacts by downstream jobs),
+  # use that as the sha to merge to, so that downstream jobs from pr-scala-distpack
+  # use the same sha for their $mergebranch ref as the distpack job itself
+  # this assumes $mergebranch increases strictly monotonically over time
+  # (e.g, whatever master was during distpack, that sha will still be fetched by fetch $mergebranch later,
+  # even though the resulting FETCH_HEAD will have moved past $mergetarget)
+  *)
+    mergetarget=$( cat $WORKSPACE/mergetarget || echo FETCH_HEAD ) ;;
+esac
 
 cd $WORKSPACE/scala/
 
