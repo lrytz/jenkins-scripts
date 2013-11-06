@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+echo "Dry run? $prDryRun"
+
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 . $scriptsDir/common
@@ -12,15 +14,21 @@ fi
 cd $WORKSPACE/scala/
 
 gitClean
+
 ./pull-binary-libs.sh || ./pull-binary-libs
 
-# don't run rests -- they are run downstream, only pack maven (needed for ide integration, but no need for dists)
-# don't pass -Dlocker.skip=1 -Dstarr.use.released=1
-# we can't skip locker explicitly -- have to wait for this to be turned on, as this wasn't always safe
-# TODO: can we move doc generation downstream as well?
-# build to (later) publish with a maven suffix that encodes the first 7 characters of the sha of the commit that we're validating
-# (don't use the sha of the merge commit as we don't have an easy way of passing that down the validation chain)
-ant -Darchives.skipxz=true -Dmaven.version.suffix="-${sha:0:7}-SNAPSHOT" distpack-maven-opt
+case $prDryRun in
+  yep) mkdir -p build/pack ; mkdir -p dists/maven/latest ;;
+  *)
+    # don't run rests -- they are run downstream, only pack maven (needed for ide integration, but no need for dists)
+    # don't pass -Dlocker.skip=1 -Dstarr.use.released=1
+    # we can't skip locker explicitly -- have to wait for this to be turned on, as this wasn't always safe
+    # TODO: can we move doc generation downstream as well?
+    # build to (later) publish with a maven suffix that encodes the first 7 characters of the sha of the commit that we're validating
+    # (don't use the sha of the merge commit as we don't have an easy way of passing that down the validation chain)
+    ant -Darchives.skipxz=true -Dmaven.version.suffix="-${sha:0:7}-SNAPSHOT" distpack-maven-opt
+    ;;
+esac
 
 # archive artifacts...
 $scriptsDir/archive-checkin

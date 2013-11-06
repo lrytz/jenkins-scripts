@@ -1,5 +1,7 @@
 #!/bin/bash -e
 
+echo "Dry run? $prDryRun"
+
 case $JOB_NAME in
   pr-scala-distpack|pr-scala-rangepos)
     echo "Deleting stale mergetarget -- will be created by this job."
