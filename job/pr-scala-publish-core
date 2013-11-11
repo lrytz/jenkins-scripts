@@ -60,6 +60,7 @@ case $prDryRun in
         if $libraryAvailable && $reflectAvailable && $compilerAvailable; then
           echo "Scala core already built!"
         else
+          cd $WORKSPACE/scala/
           ant $antDeployArgs $antBuildArgs publish-opt-nodocs
         fi
     esac
