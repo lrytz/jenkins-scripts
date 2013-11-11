@@ -31,6 +31,10 @@ prRepoUrl="$prRepoUrl"\
   MAVEN_ARGS="-P pr-scala"\
     $UBERBUILD_DIR/uber-build.sh $UBERBUILD_DIR/config/validator.conf $sha $maven_version_number
 
+# uber-build puts its local repo under target/m2repo
+# wipe the org/scala-lang part, which otherwise just keeps
+# growing and growing due to the -$sha-SNAPSHOT approach
+[[ -d $WORKSPACE/target/m2repo/org/scala-lang ]] && rm -rf $WORKSPACE/target/m2repo/org/scala-lang
 
 # this assumes ~/.m2/settings.xml contains
 # <profile>

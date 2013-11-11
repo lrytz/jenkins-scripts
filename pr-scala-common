@@ -10,12 +10,6 @@ set -e
 
 BASEDIR="$(pwd)"
 
-# don't share any caches, sbt dirs, repos,... to avoid concurrent writes
-# keep them local to the workspace also lets us diagnose problems more easily
-# Make sure this is an absolute path with preceding '/'
-LOCAL_M2_REPO="$BASEDIR/m2repo"
-GENMVNOPTS="-e -B -X -Dmaven.repo.local=${LOCAL_M2_REPO}"
-
 LOGGINGDIR="$BASEDIR/logs"
 mkdir -p $LOGGINGDIR
 
@@ -191,10 +185,19 @@ EOF
   fi
 }
 
+
 # :docstring preparesbt:
 # Usage: preparesbt
 # This lets sbt know to look for the local maven repository.
 # :end docstring:
+
+# don't share any caches, sbt dirs, repos,... to avoid concurrent writes
+# keep them local to the workspace also lets us diagnose problems more easily
+# Make sure this is an absolute path with preceding '/'
+LOCAL_M2_REPO="$BASEDIR/m2repo"
+GENMVNOPTS="-e -B -X -Dmaven.repo.local=${LOCAL_M2_REPO}"
+# otherwise this just keeps growing and growing due to the -$sha-SNAPSHOT approach
+[[ -d "$LOCAL_M2_REPO"/org/scala-lang ]] && rm -rf "$LOCAL_M2_REPO"/org/scala-lang
 
 function preparesbt(){
     # Am I using sbt-extras? I.e., do we need to use -sbt-dir?
