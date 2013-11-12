@@ -31,7 +31,7 @@ cd $BASEDIR
 
 # this depends on the fact that the default clone checkout is the
 # dev branch (master or the local equivalent)
-getOrUpdate $PARTESTDIR $PARTESTURL "v1.0-RC4" # TODO: replace by "v${partest.version.number}" when that variable is set
+getOrUpdate $PARTESTDIR $PARTESTURL "v${partest.version.number}" # "v1.0-RC4" # TODO: replace by 
 
 #####################################################
 # Set versions
