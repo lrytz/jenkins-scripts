@@ -31,7 +31,7 @@ cd $BASEDIR
 
 # this depends on the fact that the default clone checkout is the
 # dev branch (master or the local equivalent)
-getOrUpdate $PARTESTDIR $PARTESTURL "v${partest_version_number}"
+getOrUpdate $PARTESTDIR $PARTESTURL master # TODO: go back to "v${partest_version_number}"
 
 #####################################################
 # Set versions
