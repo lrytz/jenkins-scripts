@@ -1,6 +1,6 @@
-From b1620a60ec2bddc439cf9142094d870c8dc250c4 Mon Sep 17 00:00:00 2001
+From 70240ea7aaa3d01a2e4aa6b6d0e343d36710008f Mon Sep 17 00:00:00 2001
 From: Eugene Burmako <xeno.by@gmail.com>
-Date: Sat, 19 Oct 2013 01:02:16 +0200
+Date: Thu, 14 Nov 2013 16:24:57 +0100
 Subject: [PATCH] tests that currently fail for macro paradise
 
 ---
@@ -8,12 +8,14 @@ Subject: [PATCH] tests that currently fail for macro paradise
  test/files/neg/t5578.check                    |  5 +++-
  test/files/neg/t5845.check                    |  7 -----
  test/files/neg/t5845.scala                    | 16 ----------
+ test/files/neg/t7519-b.check                  |  4 ++-
+ test/files/neg/t7519.check                    |  8 +++--
  test/files/neg/t800.check                     |  3 +-
  test/files/pos/t5845.scala                    | 16 ++++++++++
  test/files/pos/z1730.scala                    | 13 ---------
  test/files/run/t5923a/Macros_1.scala          | 42 +++++++++++++++++++++++++--
  test/files/scalap/typeAnnotations/result.test |  2 +-
- 9 files changed, 68 insertions(+), 46 deletions(-)
+ 11 files changed, 77 insertions(+), 49 deletions(-)
  delete mode 100644 test/files/neg/t5845.check
  delete mode 100644 test/files/neg/t5845.scala
  create mode 100644 test/files/pos/t5845.scala
@@ -90,6 +92,36 @@ index 823c722c14..0000000000
 -  implicit val n1 = new Num[Int] {}
 -  println(5 +++ 5)
 -}
+diff --git a/test/files/neg/t7519-b.check b/test/files/neg/t7519-b.check
+index ad554b8633..08d819eeec 100644
+--- a/test/files/neg/t7519-b.check
++++ b/test/files/neg/t7519-b.check
+@@ -1,4 +1,6 @@
+-Use_2.scala:6: error: No implicit view available from String => K.
++Use_2.scala:6: error: type mismatch;
++ found   : String
++ required: Q
+   val x: Q = ex.Mac.mac("asdf")
+                        ^
+ one error found
+diff --git a/test/files/neg/t7519.check b/test/files/neg/t7519.check
+index 164d67f595..df54abaa3e 100644
+--- a/test/files/neg/t7519.check
++++ b/test/files/neg/t7519.check
+@@ -1,7 +1,11 @@
+-t7519.scala:5: error: could not find implicit value for parameter nada: Nothing
++t7519.scala:5: error: type mismatch;
++ found   : Int(0)
++ required: String
+     locally(0 : String) // was: "value conversion is not a member of C.this.C"
+             ^
+-t7519.scala:15: error: could not find implicit value for parameter nada: Nothing
++t7519.scala:15: error: type mismatch;
++ found   : Int(0)
++ required: String
+       locally(0 : String) // was: "value conversion is not a member of U"
+               ^
+ two errors found
 diff --git a/test/files/neg/t800.check b/test/files/neg/t800.check
 index 8ba95fddde..37a0c6f324 100644
 --- a/test/files/neg/t800.check
@@ -214,5 +246,5 @@ index 407b0235c6..69129d6d26 100644
 +  val x : scala.Int = { /* compiled code */ }
  }
 -- 
-1.8.4
+1.8.4.1
 
