@@ -17,5 +17,5 @@ cd $WORKSPACE/scala
 ./pull-binary-libs.sh || ./pull-binary-libs
 
 # build quick using STARR built by pr-scala-publish-core (in that sense it's locker, since it was built with starr by that upstream job)
-antArgs="-Dextra.repo.url=$prRepoUrl -Dstarr.version=$maven_version_number -Dlocker.skip=1 -Dstarr.use.released=1"
-ant $antArgs $testExtraArgs ${testTarget-test-opt docs.done}
+antArgs="-Dscalac.args.optimise=-optimise -Dextra.repo.url=$prRepoUrl -Dstarr.version=$maven_version_number -Dlocker.skip=1 -Dstarr.use.released=1"
+ant $antArgs $testExtraArgs ${testTarget-test.core docs.done}
