@@ -6,11 +6,20 @@ runSbt () {
   sbt -no-colors -no-share -sbt-launch-dir $script_dir/project/launcher "$@"
 }
 
+verify () {
+  echo "verifying $1"
+  runSbt "set scalaVersion := \"$1\"" compile
+  runSbt "set scalaVersion := \"$1\"" run 2>&1 | tee out.txt
+  grep "`cat out.check`" out.txt
+}
+
 git clean -dfx
 if [[ -d sbt-example-paradise ]]; then rm -rf sbt-example-paradise; fi
 git clone git@github.com:scalamacros/sbt-example-paradise.git sbt-example-paradise
 cp out.check sbt-example-paradise/out.check
 cd sbt-example-paradise
-runSbt compile
-runSbt run 2>&1 | tee out.txt
-grep "`cat out.check`" out.txt
+verify 2.10.2
+verify 2.10.3
+verify 2.10.4-SNAPSHOT
+# verify 2.11.0-M7
+verify 2.11.0-SNAPSHOT
