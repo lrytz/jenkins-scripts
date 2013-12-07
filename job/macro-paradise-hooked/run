@@ -11,7 +11,7 @@ git clean -dfx
 if [[ -d paradise ]]; then rm -rf paradise; fi
 git clone git@github.com:xeno-by/paradise.git -b hooked paradise
 if [[ -d scala ]]; then rm -rf scala; fi
-git clone git@github.com:xeno-by/scala.git -b topic/paradise-hooks scala
+git clone git@github.com:xeno-by/scala.git -b topic/macro-plugin-interface scala
 
 # STEP 2: SELECT SCALAC BRANCH AND APPLY OUR PATCHES
 # TODO: make all the tests pass
