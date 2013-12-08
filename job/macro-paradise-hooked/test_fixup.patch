@@ -1,50 +1,28 @@
-From ecfee7464bb2d45063223101001db57b926779fb Mon Sep 17 00:00:00 2001
+From 3f2a5857e249839afeb0d860e13c9eaf61e208e1 Mon Sep 17 00:00:00 2001
 From: Eugene Burmako <xeno.by@gmail.com>
-Date: Fri, 16 Aug 2013 23:27:11 +0200
-Subject: [PATCH] test that currently fail for macro paradise
+Date: Sun, 8 Dec 2013 00:59:30 +0100
+Subject: [PATCH] tests that currently fail for macro paradise
 
 ---
- test/files/jvm/t7006.check                         |   1 +
- .../neg/analyzerReplacingPlugins-a/sample_1.flags  |   1 -
- .../neg/analyzerReplacingPlugins-a/sample_1.scala  |   3 -
- .../neg/analyzerReplacingPlugins-b/ploogin_1.scala |  18 ---
- .../neg/analyzerReplacingPlugins-b/sample_2.flags  |   1 -
- .../neg/analyzerReplacingPlugins-b/sample_2.scala  |   3 -
- .../analyzerReplacingPlugins-b/scalac-plugin.xml   |   4 -
- test/files/neg/t6446-additional.check              |  59 +++++-----
- test/files/neg/t6446-list.check                    |   1 +
- test/files/neg/t6446-missing.check                 |  57 +++++-----
- test/files/neg/t6446-show-phases.check             |  57 +++++-----
- test/files/neg/t6666.scala                         | 121 ---------------------
- test/files/neg/t7494-no-options.check              |  59 +++++-----
- test/files/neg/t800.check                          |   3 +-
- test/files/pos/t7426.scala                         |   3 -
- test/files/pos/z1730.scala                         |  13 ---
- .../run/analyzerReplacingPlugins/ploogin_1.scala   |  31 ------
- .../run/analyzerReplacingPlugins/sample_2.flags    |   1 -
- .../run/analyzerReplacingPlugins/sample_2.scala    |   3 -
- .../run/analyzerReplacingPlugins/scalac-plugin.xml |   4 -
- test/files/run/t6102.check                         |   1 +
- test/files/run/t6259.scala                         |  56 ----------
- test/files/scalap/typeAnnotations.check            |   2 +-
- 23 files changed, 123 insertions(+), 379 deletions(-)
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-a/sample_1.flags
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-a/sample_1.scala
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-b/ploogin_1.scala
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-b/sample_2.flags
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-b/sample_2.scala
- delete mode 100644 test/files/neg/analyzerReplacingPlugins-b/scalac-plugin.xml
+ test/files/jvm/t7006.check              |   1 +
+ test/files/neg/t6446-additional.check   |  62 +++++++---------
+ test/files/neg/t6446-list.check         |   1 +
+ test/files/neg/t6446-missing.check      |  59 +++++++---------
+ test/files/neg/t6446-show-phases.check  |  59 +++++++---------
+ test/files/neg/t6666.scala              | 121 --------------------------------
+ test/files/neg/t7494-no-options.check   |  62 +++++++---------
+ test/files/neg/t800.check               |   3 +-
+ test/files/pos/t7426.scala              |   3 -
+ test/files/run/t6102.check              |   7 +-
+ test/files/run/t6259.scala              |  56 ---------------
+ test/files/scalap/typeAnnotations.check |   2 +-
+ 12 files changed, 107 insertions(+), 329 deletions(-)
  delete mode 100644 test/files/neg/t6666.scala
  delete mode 100644 test/files/pos/t7426.scala
- delete mode 100644 test/files/pos/z1730.scala
- delete mode 100644 test/files/run/analyzerReplacingPlugins/ploogin_1.scala
- delete mode 100644 test/files/run/analyzerReplacingPlugins/sample_2.flags
- delete mode 100644 test/files/run/analyzerReplacingPlugins/sample_2.scala
- delete mode 100644 test/files/run/analyzerReplacingPlugins/scalac-plugin.xml
  delete mode 100644 test/files/run/t6259.scala
 
 diff --git a/test/files/jvm/t7006.check b/test/files/jvm/t7006.check
-index 7c99eba30c..65b3b46a19 100644
+index 6294b14d62..881d431a9c 100644
 --- a/test/files/jvm/t7006.check
 +++ b/test/files/jvm/t7006.check
 @@ -1,4 +1,5 @@
@@ -53,79 +31,11 @@ index 7c99eba30c..65b3b46a19 100644
  [running phase namer on Foo_1.scala]
  [running phase packageobjects on Foo_1.scala]
  [running phase typer on Foo_1.scala]
-diff --git a/test/files/neg/analyzerReplacingPlugins-a/sample_1.flags b/test/files/neg/analyzerReplacingPlugins-a/sample_1.flags
-deleted file mode 100644
-index 8c07b37238..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-a/sample_1.flags
-+++ /dev/null
-@@ -1 +0,0 @@
---Xplugin:files/plugins/analyzerReplacingPlugin1.jar,files/plugins/analyzerReplacingPlugin2.jar
-diff --git a/test/files/neg/analyzerReplacingPlugins-a/sample_1.scala b/test/files/neg/analyzerReplacingPlugins-a/sample_1.scala
-deleted file mode 100644
-index f81d0079a3..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-a/sample_1.scala
-+++ /dev/null
-@@ -1,3 +0,0 @@
--object Test extends App {
--  println("hello")
--}
-\ No newline at end of file
-diff --git a/test/files/neg/analyzerReplacingPlugins-b/ploogin_1.scala b/test/files/neg/analyzerReplacingPlugins-b/ploogin_1.scala
-deleted file mode 100644
-index 8d65a6622c..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-b/ploogin_1.scala
-+++ /dev/null
-@@ -1,18 +0,0 @@
--package analyzerReplacingPlugins
--
--import scala.tools.nsc.{ Global, Phase }
--import scala.tools.nsc.plugins.{ EarlyPlugin, PluginComponent }
--import scala.tools.nsc.typechecker.Analyzer
--import scala.reflect.io.Path
--import scala.reflect.io.File
--import scala.reflect.internal.Mode
--
--/** A test plugin.  */
--class Ploogin(val global: Global) extends EarlyPlugin {
--  import global._
--
--  val name = "analyzerReplacingPlugin"
--  val description = "A sample analyzer replacing plugin for testing."
--  val components = Nil
--  override val analyzer: Option[Analyzer] = Some(global.analyzer)
--}
-diff --git a/test/files/neg/analyzerReplacingPlugins-b/sample_2.flags b/test/files/neg/analyzerReplacingPlugins-b/sample_2.flags
-deleted file mode 100644
-index d2adf917f9..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-b/sample_2.flags
-+++ /dev/null
-@@ -1 +0,0 @@
---Xplugin:.
-diff --git a/test/files/neg/analyzerReplacingPlugins-b/sample_2.scala b/test/files/neg/analyzerReplacingPlugins-b/sample_2.scala
-deleted file mode 100644
-index f81d0079a3..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-b/sample_2.scala
-+++ /dev/null
-@@ -1,3 +0,0 @@
--object Test extends App {
--  println("hello")
--}
-\ No newline at end of file
-diff --git a/test/files/neg/analyzerReplacingPlugins-b/scalac-plugin.xml b/test/files/neg/analyzerReplacingPlugins-b/scalac-plugin.xml
-deleted file mode 100644
-index 7f2cb2f6dd..0000000000
---- a/test/files/neg/analyzerReplacingPlugins-b/scalac-plugin.xml
-+++ /dev/null
-@@ -1,4 +0,0 @@
--<plugin>
--  <name>analyzer-replacing-plugin</name>
--  <classname>analyzerReplacingPlugins.Ploogin</classname>
--</plugin>
 diff --git a/test/files/neg/t6446-additional.check b/test/files/neg/t6446-additional.check
-index 24201c07c2..76dfddf4f1 100755
+index a87af2f1e5..055257a6ac 100755
 --- a/test/files/neg/t6446-additional.check
 +++ b/test/files/neg/t6446-additional.check
-@@ -1,32 +1,33 @@
+@@ -1,39 +1,29 @@
      phase name  id  description
      ----------  --  -----------
          parser   1  parse source into ASTs, perform simple desugaring
@@ -140,7 +50,7 @@ index 24201c07c2..76dfddf4f1 100755
 -       uncurry  10  uncurry, translate function values to anonymous classes
 -     tailcalls  11  replace tail calls by jumps
 -    specialize  12  @specialized-driven class and method specialization
-- explicitouter  13  this refs to outer pointers, translate patterns
+- explicitouter  13  this refs to outer pointers
 -       erasure  14  erase types, add interfaces for traits
 -   posterasure  15  clean up erased inline classes
 -      lazyvals  16  allocate bitmaps, translate lazy vals into lazified defs
@@ -149,15 +59,22 @@ index 24201c07c2..76dfddf4f1 100755
 -       flatten  19  eliminate inner classes
 -         mixin  20  mixin composition
 -       cleanup  21  platform-specific cleanups, generate reflective calls
--         icode  22  generate portable intermediate code
--       inliner  23  optimization: do inlining
--inlinehandlers  24  optimization: inline exception handlers
--      closelim  25  optimization: eliminate uncalled closures
--      constopt  26  optimization: optimize null and other constants
--           dce  27  optimization: eliminate dead code
--           jvm  28  generate JVM bytecode
--       ploogin  29  A sample phase that does so many things it's kind of hard...
--      terminal  30  The last phase in the compiler chain
+-    delambdafy  22  remove lambdas
+-         icode  23  generate portable intermediate code
+-#partest -optimise
+-       inliner  24  optimization: do inlining
+-inlinehandlers  25  optimization: inline exception handlers
+-      closelim  26  optimization: eliminate uncalled closures
+-      constopt  27  optimization: optimize null and other constants
+-           dce  28  optimization: eliminate dead code
+-           jvm  29  generate JVM bytecode
+-       ploogin  30  A sample phase that does so many things it's kind of hard...
+-      terminal  31  the last phase during a compilation run
+-#partest !-optimise
+-           jvm  24  generate JVM bytecode
+-       ploogin  25  A sample phase that does so many things it's kind of hard...
+-      terminal  26  the last phase during a compilation run
+-#partest
 + macroparadise   2  let our powers combine
 +         namer   3  resolve names, attach symbols to named trees
 +packageobjects   4  load package objects
@@ -170,7 +87,7 @@ index 24201c07c2..76dfddf4f1 100755
 +       uncurry  11  uncurry, translate function values to anonymous classes
 +     tailcalls  12  replace tail calls by jumps
 +    specialize  13  @specialized-driven class and method specialization
-+ explicitouter  14  this refs to outer pointers, translate patterns
++ explicitouter  14  this refs to outer pointers
 +       erasure  15  erase types, add interfaces for traits
 +   posterasure  16  clean up erased inline classes
 +      lazyvals  17  allocate bitmaps, translate lazy vals into lazified defs
@@ -179,15 +96,11 @@ index 24201c07c2..76dfddf4f1 100755
 +       flatten  20  eliminate inner classes
 +         mixin  21  mixin composition
 +       cleanup  22  platform-specific cleanups, generate reflective calls
-+         icode  23  generate portable intermediate code
-+       inliner  24  optimization: do inlining
-+inlinehandlers  25  optimization: inline exception handlers
-+      closelim  26  optimization: eliminate uncalled closures
-+      constopt  27  optimization: optimize null and other constants
-+           dce  28  optimization: eliminate dead code
-+           jvm  29  generate JVM bytecode
-+       ploogin  30  A sample phase that does so many things it's kind of hard...
-+      terminal  31  The last phase in the compiler chain
++    delambdafy  23  remove lambdas
++         icode  24  generate portable intermediate code
++           jvm  25  generate JVM bytecode
++       ploogin  26  A sample phase that does so many things it's kind of hard...
++      terminal  27  the last phase during a compilation run
 diff --git a/test/files/neg/t6446-list.check b/test/files/neg/t6446-list.check
 index fa5c581941..3b08e6480a 100755
 --- a/test/files/neg/t6446-list.check
@@ -196,10 +109,10 @@ index fa5c581941..3b08e6480a 100755
 +macroparadise - Empowers production Scala compiler with latest macro developments
  ploogin - A sample plugin for testing.
 diff --git a/test/files/neg/t6446-missing.check b/test/files/neg/t6446-missing.check
-index 6e5bdcf07c..b87e2dcd5a 100755
+index cd867289c3..0d782dfcf9 100755
 --- a/test/files/neg/t6446-missing.check
 +++ b/test/files/neg/t6446-missing.check
-@@ -2,31 +2,32 @@ Warning: class not found: t6446.Ploogin
+@@ -2,37 +2,28 @@ Warning: class not found: t6446.Ploogin
      phase name  id  description
      ----------  --  -----------
          parser   1  parse source into ASTs, perform simple desugaring
@@ -214,7 +127,7 @@ index 6e5bdcf07c..b87e2dcd5a 100755
 -       uncurry  10  uncurry, translate function values to anonymous classes
 -     tailcalls  11  replace tail calls by jumps
 -    specialize  12  @specialized-driven class and method specialization
-- explicitouter  13  this refs to outer pointers, translate patterns
+- explicitouter  13  this refs to outer pointers
 -       erasure  14  erase types, add interfaces for traits
 -   posterasure  15  clean up erased inline classes
 -      lazyvals  16  allocate bitmaps, translate lazy vals into lazified defs
@@ -223,14 +136,20 @@ index 6e5bdcf07c..b87e2dcd5a 100755
 -       flatten  19  eliminate inner classes
 -         mixin  20  mixin composition
 -       cleanup  21  platform-specific cleanups, generate reflective calls
--         icode  22  generate portable intermediate code
--       inliner  23  optimization: do inlining
--inlinehandlers  24  optimization: inline exception handlers
--      closelim  25  optimization: eliminate uncalled closures
--      constopt  26  optimization: optimize null and other constants
--           dce  27  optimization: eliminate dead code
--           jvm  28  generate JVM bytecode
--      terminal  29  The last phase in the compiler chain
+-    delambdafy  22  remove lambdas
+-         icode  23  generate portable intermediate code
+-#partest !-optimise
+-           jvm  24  generate JVM bytecode
+-      terminal  25  the last phase during a compilation run
+-#partest -optimise
+-       inliner  24  optimization: do inlining
+-inlinehandlers  25  optimization: inline exception handlers
+-      closelim  26  optimization: eliminate uncalled closures
+-      constopt  27  optimization: optimize null and other constants
+-           dce  28  optimization: eliminate dead code
+-           jvm  29  generate JVM bytecode
+-      terminal  30  the last phase during a compilation run
+-#partest
 + macroparadise   2  let our powers combine
 +         namer   3  resolve names, attach symbols to named trees
 +packageobjects   4  load package objects
@@ -243,7 +162,7 @@ index 6e5bdcf07c..b87e2dcd5a 100755
 +       uncurry  11  uncurry, translate function values to anonymous classes
 +     tailcalls  12  replace tail calls by jumps
 +    specialize  13  @specialized-driven class and method specialization
-+ explicitouter  14  this refs to outer pointers, translate patterns
++ explicitouter  14  this refs to outer pointers
 +       erasure  15  erase types, add interfaces for traits
 +   posterasure  16  clean up erased inline classes
 +      lazyvals  17  allocate bitmaps, translate lazy vals into lazified defs
@@ -252,19 +171,15 @@ index 6e5bdcf07c..b87e2dcd5a 100755
 +       flatten  20  eliminate inner classes
 +         mixin  21  mixin composition
 +       cleanup  22  platform-specific cleanups, generate reflective calls
-+         icode  23  generate portable intermediate code
-+       inliner  24  optimization: do inlining
-+inlinehandlers  25  optimization: inline exception handlers
-+      closelim  26  optimization: eliminate uncalled closures
-+      constopt  27  optimization: optimize null and other constants
-+           dce  28  optimization: eliminate dead code
-+           jvm  29  generate JVM bytecode
-+      terminal  30  The last phase in the compiler chain
++    delambdafy  23  remove lambdas
++         icode  24  generate portable intermediate code
++           jvm  25  generate JVM bytecode
++      terminal  26  the last phase during a compilation run
 diff --git a/test/files/neg/t6446-show-phases.check b/test/files/neg/t6446-show-phases.check
-index a1bf408506..c63204441e 100644
+index 3ae3f96ef2..ed8da39548 100644
 --- a/test/files/neg/t6446-show-phases.check
 +++ b/test/files/neg/t6446-show-phases.check
-@@ -1,31 +1,32 @@
+@@ -1,37 +1,28 @@
      phase name  id  description
      ----------  --  -----------
          parser   1  parse source into ASTs, perform simple desugaring
@@ -279,7 +194,7 @@ index a1bf408506..c63204441e 100644
 -       uncurry  10  uncurry, translate function values to anonymous classes
 -     tailcalls  11  replace tail calls by jumps
 -    specialize  12  @specialized-driven class and method specialization
-- explicitouter  13  this refs to outer pointers, translate patterns
+- explicitouter  13  this refs to outer pointers
 -       erasure  14  erase types, add interfaces for traits
 -   posterasure  15  clean up erased inline classes
 -      lazyvals  16  allocate bitmaps, translate lazy vals into lazified defs
@@ -288,14 +203,20 @@ index a1bf408506..c63204441e 100644
 -       flatten  19  eliminate inner classes
 -         mixin  20  mixin composition
 -       cleanup  21  platform-specific cleanups, generate reflective calls
--         icode  22  generate portable intermediate code
--       inliner  23  optimization: do inlining
--inlinehandlers  24  optimization: inline exception handlers
--      closelim  25  optimization: eliminate uncalled closures
--      constopt  26  optimization: optimize null and other constants
--           dce  27  optimization: eliminate dead code
--           jvm  28  generate JVM bytecode
--      terminal  29  The last phase in the compiler chain
+-    delambdafy  22  remove lambdas
+-         icode  23  generate portable intermediate code
+-#partest !-optimise
+-           jvm  24  generate JVM bytecode
+-      terminal  25  the last phase during a compilation run
+-#partest -optimise
+-       inliner  24  optimization: do inlining
+-inlinehandlers  25  optimization: inline exception handlers
+-      closelim  26  optimization: eliminate uncalled closures
+-      constopt  27  optimization: optimize null and other constants
+-           dce  28  optimization: eliminate dead code
+-           jvm  29  generate JVM bytecode
+-      terminal  30  the last phase during a compilation run
+-#partest
 + macroparadise   2  let our powers combine
 +         namer   3  resolve names, attach symbols to named trees
 +packageobjects   4  load package objects
@@ -308,7 +229,7 @@ index a1bf408506..c63204441e 100644
 +       uncurry  11  uncurry, translate function values to anonymous classes
 +     tailcalls  12  replace tail calls by jumps
 +    specialize  13  @specialized-driven class and method specialization
-+ explicitouter  14  this refs to outer pointers, translate patterns
++ explicitouter  14  this refs to outer pointers
 +       erasure  15  erase types, add interfaces for traits
 +   posterasure  16  clean up erased inline classes
 +      lazyvals  17  allocate bitmaps, translate lazy vals into lazified defs
@@ -317,17 +238,13 @@ index a1bf408506..c63204441e 100644
 +       flatten  20  eliminate inner classes
 +         mixin  21  mixin composition
 +       cleanup  22  platform-specific cleanups, generate reflective calls
-+         icode  23  generate portable intermediate code
-+       inliner  24  optimization: do inlining
-+inlinehandlers  25  optimization: inline exception handlers
-+      closelim  26  optimization: eliminate uncalled closures
-+      constopt  27  optimization: optimize null and other constants
-+           dce  28  optimization: eliminate dead code
-+           jvm  29  generate JVM bytecode
-+      terminal  30  The last phase in the compiler chain
++    delambdafy  23  remove lambdas
++         icode  24  generate portable intermediate code
++           jvm  25  generate JVM bytecode
++      terminal  26  the last phase during a compilation run
 diff --git a/test/files/neg/t6666.scala b/test/files/neg/t6666.scala
 deleted file mode 100644
-index 1919ea3ca9..0000000000
+index 58c5be5405..0000000000
 --- a/test/files/neg/t6666.scala
 +++ /dev/null
 @@ -1,121 +0,0 @@
@@ -451,13 +368,13 @@ index 1919ea3ca9..0000000000
 -    object Nested { def xx = x}
 -    Nested.xx
 -  }
--} with AnyRef 
+-} with AnyRef
 \ No newline at end of file
 diff --git a/test/files/neg/t7494-no-options.check b/test/files/neg/t7494-no-options.check
-index c197d2a671..9945afa9c5 100644
+index e3316f590a..15c89d4f9a 100644
 --- a/test/files/neg/t7494-no-options.check
 +++ b/test/files/neg/t7494-no-options.check
-@@ -2,32 +2,33 @@ error: Error: ploogin has no options
+@@ -2,39 +2,29 @@ error: Error: ploogin takes no options
      phase name  id  description
      ----------  --  -----------
          parser   1  parse source into ASTs, perform simple desugaring
@@ -472,7 +389,7 @@ index c197d2a671..9945afa9c5 100644
 -       uncurry  10  uncurry, translate function values to anonymous classes
 -     tailcalls  11  replace tail calls by jumps
 -    specialize  12  @specialized-driven class and method specialization
-- explicitouter  13  this refs to outer pointers, translate patterns
+- explicitouter  13  this refs to outer pointers
 -       erasure  14  erase types, add interfaces for traits
 -   posterasure  15  clean up erased inline classes
 -      lazyvals  16  allocate bitmaps, translate lazy vals into lazified defs
@@ -481,15 +398,22 @@ index c197d2a671..9945afa9c5 100644
 -       flatten  19  eliminate inner classes
 -         mixin  20  mixin composition
 -       cleanup  21  platform-specific cleanups, generate reflective calls
--         icode  22  generate portable intermediate code
--       inliner  23  optimization: do inlining
--inlinehandlers  24  optimization: inline exception handlers
--      closelim  25  optimization: eliminate uncalled closures
--      constopt  26  optimization: optimize null and other constants
--           dce  27  optimization: eliminate dead code
--           jvm  28  generate JVM bytecode
--       ploogin  29  A sample phase that does so many things it's kind of hard...
--      terminal  30  The last phase in the compiler chain
+-    delambdafy  22  remove lambdas
+-         icode  23  generate portable intermediate code
+-#partest !-optimise
+-           jvm  24  generate JVM bytecode
+-       ploogin  25  A sample phase that does so many things it's kind of hard...
+-      terminal  26  the last phase during a compilation run
+-#partest -optimise
+-       inliner  24  optimization: do inlining
+-inlinehandlers  25  optimization: inline exception handlers
+-      closelim  26  optimization: eliminate uncalled closures
+-      constopt  27  optimization: optimize null and other constants
+-           dce  28  optimization: eliminate dead code
+-           jvm  29  generate JVM bytecode
+-       ploogin  30  A sample phase that does so many things it's kind of hard...
+-      terminal  31  the last phase during a compilation run
+-#partest
 + macroparadise   2  let our powers combine
 +         namer   3  resolve names, attach symbols to named trees
 +packageobjects   4  load package objects
@@ -502,7 +426,7 @@ index c197d2a671..9945afa9c5 100644
 +       uncurry  11  uncurry, translate function values to anonymous classes
 +     tailcalls  12  replace tail calls by jumps
 +    specialize  13  @specialized-driven class and method specialization
-+ explicitouter  14  this refs to outer pointers, translate patterns
++ explicitouter  14  this refs to outer pointers
 +       erasure  15  erase types, add interfaces for traits
 +   posterasure  16  clean up erased inline classes
 +      lazyvals  17  allocate bitmaps, translate lazy vals into lazified defs
@@ -511,15 +435,11 @@ index c197d2a671..9945afa9c5 100644
 +       flatten  20  eliminate inner classes
 +         mixin  21  mixin composition
 +       cleanup  22  platform-specific cleanups, generate reflective calls
-+         icode  23  generate portable intermediate code
-+       inliner  24  optimization: do inlining
-+inlinehandlers  25  optimization: inline exception handlers
-+      closelim  26  optimization: eliminate uncalled closures
-+      constopt  27  optimization: optimize null and other constants
-+           dce  28  optimization: eliminate dead code
-+           jvm  29  generate JVM bytecode
-+       ploogin  30  A sample phase that does so many things it's kind of hard...
-+      terminal  31  The last phase in the compiler chain
++    delambdafy  23  remove lambdas
++         icode  24  generate portable intermediate code
++           jvm  25  generate JVM bytecode
++       ploogin  26  A sample phase that does so many things it's kind of hard...
++      terminal  27  the last phase during a compilation run
 diff --git a/test/files/neg/t800.check b/test/files/neg/t800.check
 index 8ba95fddde..37a0c6f324 100644
 --- a/test/files/neg/t800.check
@@ -543,91 +463,8 @@ index 8e42ad1812..0000000000
 -class foo(x: Any) extends annotation.StaticAnnotation
 -
 -@foo(new AnyRef { }) trait A
-diff --git a/test/files/pos/z1730.scala b/test/files/pos/z1730.scala
-deleted file mode 100644
-index 0c5875a818..0000000000
---- a/test/files/pos/z1730.scala
-+++ /dev/null
-@@ -1,13 +0,0 @@
--// /scala/trac/z1730/a.scala
--// Wed May 23 07:41:25 PDT 2012
--
--class X[R] {
--  def xx(value: => R, addTweak: Boolean = true) = 0
--}
--
--class Boo {
--  implicit def toX[R](v: R) : X[R] = null
--  def goo2 {
--    3.xx(34)
--  }
--}
-diff --git a/test/files/run/analyzerReplacingPlugins/ploogin_1.scala b/test/files/run/analyzerReplacingPlugins/ploogin_1.scala
-deleted file mode 100644
-index 4c2cc562ec..0000000000
---- a/test/files/run/analyzerReplacingPlugins/ploogin_1.scala
-+++ /dev/null
-@@ -1,31 +0,0 @@
--package analyzerReplacingPlugins
--
--import scala.tools.nsc.{ Global, Phase }
--import scala.tools.nsc.plugins.{ EarlyPlugin, PluginComponent }
--import scala.tools.nsc.typechecker.Analyzer
--import scala.reflect.io.Path
--import scala.reflect.io.File
--import scala.reflect.internal.Mode
--
--/** A test plugin.  */
--class Ploogin(val global: Global) extends EarlyPlugin {
--  import global._
--
--  val name = "analyzerReplacingPlugin"
--  val description = "A sample analyzer replacing plugin for testing."
--  val components = Nil
--  override val analyzer: Option[Analyzer] = Some(new { val global: Ploogin.this.global.type = Ploogin.this.global } with MyAnalyzer)
--
--  private trait MyAnalyzer extends Analyzer {
--    val global: Ploogin.this.global.type
--    override def newTyper(context: Context) = new Typer(context) {
--      override def typed1(tree: Tree, mode: Mode, pt: Type): Tree = {
--        val tree1 = tree match {
--          case tree @ Literal(Constant("hello")) if tree.tpe == null => Literal(Constant("hello world"))
--          case _ => tree
--        }
--        super.typed1(tree1, mode, pt)
--      }
--    }
--  }
--}
-diff --git a/test/files/run/analyzerReplacingPlugins/sample_2.flags b/test/files/run/analyzerReplacingPlugins/sample_2.flags
-deleted file mode 100644
-index d2adf917f9..0000000000
---- a/test/files/run/analyzerReplacingPlugins/sample_2.flags
-+++ /dev/null
-@@ -1 +0,0 @@
---Xplugin:.
-diff --git a/test/files/run/analyzerReplacingPlugins/sample_2.scala b/test/files/run/analyzerReplacingPlugins/sample_2.scala
-deleted file mode 100644
-index f81d0079a3..0000000000
---- a/test/files/run/analyzerReplacingPlugins/sample_2.scala
-+++ /dev/null
-@@ -1,3 +0,0 @@
--object Test extends App {
--  println("hello")
--}
-\ No newline at end of file
-diff --git a/test/files/run/analyzerReplacingPlugins/scalac-plugin.xml b/test/files/run/analyzerReplacingPlugins/scalac-plugin.xml
-deleted file mode 100644
-index 7f2cb2f6dd..0000000000
---- a/test/files/run/analyzerReplacingPlugins/scalac-plugin.xml
-+++ /dev/null
-@@ -1,4 +0,0 @@
--<plugin>
--  <name>analyzer-replacing-plugin</name>
--  <classname>analyzerReplacingPlugins.Ploogin</classname>
--</plugin>
 diff --git a/test/files/run/t6102.check b/test/files/run/t6102.check
-index 97e455647b..a6a8aa599e 100644
+index aa3e6cc9e2..677cbaf939 100644
 --- a/test/files/run/t6102.check
 +++ b/test/files/run/t6102.check
 @@ -1,4 +1,5 @@
@@ -636,9 +473,22 @@ index 97e455647b..a6a8aa599e 100644
  [running phase namer on t6102.scala]
  [running phase packageobjects on t6102.scala]
  [running phase typer on t6102.scala]
+@@ -21,12 +22,6 @@
+ [running phase cleanup on t6102.scala]
+ [running phase delambdafy on t6102.scala]
+ [running phase icode on t6102.scala]
+-#partest -optimise
+-[running phase inliner on t6102.scala]
+-[running phase inlinehandlers on t6102.scala]
+-[running phase closelim on t6102.scala]
+-[running phase constopt on t6102.scala]
+-#partest
+ [running phase dce on t6102.scala]
+ [running phase jvm on icode]
+ hello
 diff --git a/test/files/run/t6259.scala b/test/files/run/t6259.scala
 deleted file mode 100644
-index 294c95e96b..0000000000
+index b2c27df51f..0000000000
 --- a/test/files/run/t6259.scala
 +++ /dev/null
 @@ -1,56 +0,0 @@
@@ -681,9 +531,9 @@ index 294c95e96b..0000000000
 -class DoubleTrouble[X](x: AnyRef)(implicit override val tt: TypeTag[X]) extends A[X]
 -
 -object DoubleOk extends DoubleTrouble[String]({
--  // Drops to this.getClass and is an issue 
--  object InnerTrouble extends A[String]; 
--  InnerTrouble 
+-  // Drops to this.getClass and is an issue
+-  object InnerTrouble extends A[String];
+-  InnerTrouble
 -})
 -
 -object Test extends App {
@@ -713,5 +563,5 @@ index cba69f8e41..d72817a725 100644
 +  val x: scala.Int = { /* compiled code */ }
  }
 -- 
-1.8.1.4
+1.8.4.2
 
