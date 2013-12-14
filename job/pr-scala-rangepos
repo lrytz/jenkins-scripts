@@ -25,6 +25,6 @@ case $prDryRun in
     ant -Dscalac.args.optimise=-optimise locker.done
     ant $scalacArgs build-opt
     # No need to run the stability tests
-    ant -Dscalac.args.optimise=-optimise $scalacArgs test.suite test.continuations.suite test.scaladoc
+    ant -Dscalac.args.optimise=-optimise $scalacArgs test.suite test.scaladoc
     ;;
 esac
