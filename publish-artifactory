@@ -1,9 +1,0 @@
-#!/bin/bash -x
-
-echo "Deploying artifacts to private-repo.typesafe.com ..."
-
-cd dists/maven/latest
-
-ant -Dremote.snapshot.repository=http://private-repo.typesafe.com/typesafe/scala-pr-validation-snapshots/ \
-    -Drepository.credentials.id=artifactory-bot \
-    deploy
