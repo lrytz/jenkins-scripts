@@ -35,11 +35,11 @@ EOM
     # publish scaladoc nightlies
     rsync -az build/scaladoc/ "$nightly_rsync_dest/$scaladocDir"
 
-    # publish sbaz packages
-    #[[ -d dists/sbaz ]] && rsync -az dists/sbaz/ "$nightly_rsync_dest/sbaz"
-
     # push to the maven repository
-    cd dists/maven/latest
-    ant deploy -Dsettings.file=$maven_settings_file
+    # if there's no build.xml, we've already published during the main job (we're on master aka 2.11.x)
+    if [[ -f dists/maven/latest/build.xml ]]; then
+      cd dists/maven/latest
+      ant deploy -Dsettings.file=$maven_settings_file
+    fi
   }
 }
