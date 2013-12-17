@@ -18,7 +18,6 @@ if [[ -d sbt-example-paradise ]]; then rm -rf sbt-example-paradise; fi
 git clone git@github.com:scalamacros/sbt-example-paradise.git sbt-example-paradise
 cp out.check sbt-example-paradise/out.check
 cd sbt-example-paradise
-verify 2.10.2
 verify 2.10.3
 verify 2.10.4-SNAPSHOT
 verify 2.11.0-M7
