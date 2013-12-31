@@ -1,6 +1,6 @@
-From 70240ea7aaa3d01a2e4aa6b6d0e343d36710008f Mon Sep 17 00:00:00 2001
+From 1665c26a640d211ae2f08ce653f860fb7292962a Mon Sep 17 00:00:00 2001
 From: Eugene Burmako <xeno.by@gmail.com>
-Date: Thu, 14 Nov 2013 16:24:57 +0100
+Date: Tue, 31 Dec 2013 15:27:30 +0300
 Subject: [PATCH] tests that currently fail for macro paradise
 
 ---
@@ -11,13 +11,17 @@ Subject: [PATCH] tests that currently fail for macro paradise
  test/files/neg/t7519-b.check                  |  4 ++-
  test/files/neg/t7519.check                    |  8 +++--
  test/files/neg/t800.check                     |  3 +-
+ test/files/neg/t8104b/Macros_1.scala          | 23 ---------------
+ test/files/neg/t8104b/Test_2.scala            | 24 ---------------
  test/files/pos/t5845.scala                    | 16 ++++++++++
  test/files/pos/z1730.scala                    | 13 ---------
  test/files/run/t5923a/Macros_1.scala          | 42 +++++++++++++++++++++++++--
  test/files/scalap/typeAnnotations/result.test |  2 +-
- 11 files changed, 77 insertions(+), 49 deletions(-)
+ 13 files changed, 77 insertions(+), 96 deletions(-)
  delete mode 100644 test/files/neg/t5845.check
  delete mode 100644 test/files/neg/t5845.scala
+ delete mode 100644 test/files/neg/t8104b/Macros_1.scala
+ delete mode 100644 test/files/neg/t8104b/Test_2.scala
  create mode 100644 test/files/pos/t5845.scala
  delete mode 100644 test/files/pos/z1730.scala
 
@@ -136,6 +140,66 @@ index 8ba95fddde..37a0c6f324 100644
    var qualification = false;
        ^
  t800.scala:16: error: method qualification is defined twice
+diff --git a/test/files/neg/t8104b/Macros_1.scala b/test/files/neg/t8104b/Macros_1.scala
+deleted file mode 100644
+index 688d0694c0..0000000000
+--- a/test/files/neg/t8104b/Macros_1.scala
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import scala.reflect.macros.Context
+-
+-object Macros {
+-  def impl[T](c: Context)(implicit T: c.WeakTypeTag[T]) = {
+-    import c.universe._
+-    import Flag._
+-    import definitions._
+-    val fields = T.tpe.declarations.toList.collect{ case x: TermSymbol if x.isVal && x.isCaseAccessor => x }
+-    val Repr = appliedType(TupleClass(fields.length).asType.toType, fields.map(_.typeSignature))
+-    c.Expr(Block(
+-      List(ClassDef(
+-        Modifiers(FINAL),
+-        newTypeName("$anon"),
+-        List(),
+-        Template(
+-          List(AppliedTypeTree(Ident(newTypeName("Generic")), List(TypeTree(T.tpe)))),
+-          emptyValDef,
+-          List(
+-            DefDef(Modifiers(), nme.CONSTRUCTOR, List(), List(List()), TypeTree(), Block(List(Apply(Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), nme.CONSTRUCTOR), List())), Literal(Constant(())))),
+-            TypeDef(Modifiers(), newTypeName("Repr"), List(), TypeTree(Repr)))))),
+-      Apply(Select(New(Ident(newTypeName("$anon"))), nme.CONSTRUCTOR), List())))
+-  }
+-}
+\ No newline at end of file
+diff --git a/test/files/neg/t8104b/Test_2.scala b/test/files/neg/t8104b/Test_2.scala
+deleted file mode 100644
+index a0d35942ba..0000000000
+--- a/test/files/neg/t8104b/Test_2.scala
++++ /dev/null
+@@ -1,24 +0,0 @@
+-trait Generic[T] { type Repr }
+-object Generic {
+-  type Aux[T, Repr0] = Generic[T] { type Repr = Repr0 }
+-  import scala.language.experimental.macros
+-  implicit def materializeGeneric[T, Repr]: Generic.Aux[T, Repr] = macro Macros.impl[T]
+-}
+-
+-object Test extends App {
+-  case class C(x: Int, y: Int)
+-
+-  // this doesn't work because of SI-7470
+-  // well, in fact SI-7470 has been fixed: https://github.com/scala/scala/pull/2499
+-  // it's just that the fix hasn't been backported to 2.10.x
+-  // if you've made this compile, consider taking a look at the aforementioned pull request
+-  def reprify[T, Repr](x: T)(implicit generic: Generic.Aux[T, Repr]) = ???
+-  reprify(C(40, 2))
+-
+-  // this is a compilation error at the moment as explained in SI-8104
+-  // because matchesPt in implicit search says that depoly(<type of materializeGeneric>) isn't a subtype of Generic.Aux[C, (Int, Int)]
+-  // which is rightfully so, because depoly only replaces type parameters, not type members with wildcard types
+-  // however in the future we might want to relax the matchesPt check, so this might start compiling
+-  // therefore, if you've broken this test, then you should be happy, because most likely you've just enabled an interesting use case!
+-  implicitly[Generic.Aux[C, (Int, Int)]]
+-}
 diff --git a/test/files/pos/t5845.scala b/test/files/pos/t5845.scala
 new file mode 100644
 index 0000000000..823c722c14
@@ -246,5 +310,5 @@ index 407b0235c6..69129d6d26 100644
 +  val x : scala.Int = { /* compiled code */ }
  }
 -- 
-1.8.4.1
+1.8.5.2
 
