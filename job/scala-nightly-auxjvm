@@ -2,8 +2,4 @@
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-if java -version 2>&1 | grep -q " 1.7"; then
-  git checkout -f origin/java7 && git merge origin/master && antArgs="-Darchives.skipxz=true" $scriptsDir/build
-else
-  antArgs="-Darchives.skipxz=true" $scriptsDir/build
-fi
+antArgs="-Darchives.skipxz=true" $scriptsDir/build
