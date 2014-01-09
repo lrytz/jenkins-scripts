@@ -1,3 +1,3 @@
 #!/bin/bash -ex
 
-ant nightly publish-signed
+ant -Dmaven.version.suffix=$mavenVersionSuffix nightly publish-signed
