@@ -1,4 +1,4 @@
-#!/bin/bash -ex
+#!C:\cygwin\bin\bash.exe -ex
 
 java -Dsbt.log.noformat=true -jar C:/cygwin/home/scala/sbt-launch-0.13.0.jar \
   "set resolvers += \"staging\" at \"${stagingRepoURL}\""\
