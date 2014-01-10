@@ -1,19 +1,27 @@
-From 304eddc072a63c887c9bfa8fdf8ec2ea491e9db0 Mon Sep 17 00:00:00 2001
+From fd17dfeaec6f665715c2db21736c62d188ded540 Mon Sep 17 00:00:00 2001
 From: Eugene Burmako <xeno.by@gmail.com>
-Date: Fri, 10 Jan 2014 22:10:56 +0100
+Date: Sat, 11 Jan 2014 00:05:25 +0100
 Subject: [PATCH] tests that currently fail for macro paradise
 
 ---
+ test/files/neg/t6446-list.check         |   1 +
  test/files/neg/t6666.scala              | 121 --------------------------------
  test/files/neg/t800.check               |   3 +-
  test/files/pos/t7426.scala              |   3 -
  test/files/run/t6259.scala              |  56 ---------------
  test/files/scalap/typeAnnotations.check |   2 +-
- 5 files changed, 2 insertions(+), 183 deletions(-)
+ 6 files changed, 3 insertions(+), 183 deletions(-)
  delete mode 100644 test/files/neg/t6666.scala
  delete mode 100644 test/files/pos/t7426.scala
  delete mode 100644 test/files/run/t6259.scala
 
+diff --git a/test/files/neg/t6446-list.check b/test/files/neg/t6446-list.check
+index fa5c581941..3b08e6480a 100755
+--- a/test/files/neg/t6446-list.check
++++ b/test/files/neg/t6446-list.check
+@@ -1 +1,2 @@
++macroparadise - Empowers production Scala compiler with latest macro developments
+ ploogin - A sample plugin for testing.
 diff --git a/test/files/neg/t6666.scala b/test/files/neg/t6666.scala
 deleted file mode 100644
 index 58c5be5405..0000000000
