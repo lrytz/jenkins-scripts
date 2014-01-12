@@ -1,8 +1,17 @@
 #!/bin/bash -x
 
+savedState=0
+savedStatePublish=0
+
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 $scriptsDir/build
 savedState=$?
+
+if grep -q '<target name="publish"' build.xml; then
+  ant publish
+  savedStatePublish=$?
+fi
+
 $scriptsDir/archive-nightly
-exit $savedState
+exit $(($savedState || $savedStatePublish))

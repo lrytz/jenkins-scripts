@@ -36,8 +36,8 @@ EOM
     rsync -az build/scaladoc/ "$nightly_rsync_dest/$scaladocDir"
 
     # push to the maven repository
-    # if there's no build.xml, we've already published during the main job (we're on master aka 2.11.x)
-    if [[ -f dists/maven/latest/build.xml ]]; then
+    # in master, we've already published during the main job
+    if [[ "$jobName" != *-master ]]; then
       cd dists/maven/latest
       ant deploy -Dsettings.file=$maven_settings_file
     fi
