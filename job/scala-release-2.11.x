@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 # requirements:
+# - ~/.sonatype-token that does an export SONA_USER_TOKEN
 # - ~/.m2/settings.xml with credentials for sonatype
     # <server>
     #   <id>private-repo</id>
@@ -49,15 +50,12 @@ publishTask=publish-signed #publish-local
 
 SCALA_VER="$SCALA_BASEVER$MAVEN_SUFFIX"
 
-baseDir=~/git/pr-scala/scratch #`pwd`
-
-
-# TODO: clean local repo, or publish to a fresh one
+baseDir=`pwd` # ~/git/pr-scala/scratch #
 
 stApi="https://oss.sonatype.org/service/local/"
 
 function st_curl(){
-  curl -H "accept: application/json" --user $SONA_USER_TOKEN -s -o - $@
+  curl -H "accept: application/json" -K ~/.sonatype-curl -s -o - $@
 }
 
 function st_stagingRepoMostRecent() {
@@ -229,7 +227,7 @@ ant -Dstarr.version=$SCALA_VER\
 # publish to sonatype
 publishModules
 
-echo $(st_stagingRepoMostRecent)
+echo "Published to sonatype staging repo $(st_stagingRepoMostRecent)"
 
 git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
 # TODO: push to github
