@@ -1,5 +1,17 @@
 #!/bin/bash -ex
-# needs SONA_USER_TOKEN and ~/.m2/settings.xml with credentials for sonatype
+# requirements:
+# - ~/.m2/settings.xml with credentials for sonatype
+    # <server>
+    #   <id>private-repo</id>
+    #   <username>jenkinside</username>
+    #   <password></password>
+    # </server>
+# - ~/.ivy2/.credentials-private-repo as follows:
+    # realm=Artifactory Realm
+    # host=private-repo.typesafe.com
+    # user=jenkinside
+    # password=
+
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
@@ -7,88 +19,172 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
 #parse_properties versions.properties
 
-     SCALA_GITREF="master"
+        SCALA_REF="master"
     SCALA_BASEVER="2.11.0"
      MAVEN_SUFFIX="-M8"
           XML_VER="1.0.0-RC7"
       PARSERS_VER="1.0.0-RC5"
-   SCALACHECK_VER="1.11.1"
+CONTINUATIONS_VER="1.0.0-RC2"
+        SWING_VER="1.0.0-RC2"
       PARTEST_VER="1.0.0-RC8"
 PARTEST_IFACE_VER="0.2"
+   SCALACHECK_VER="1.11.2"
+
+          XML_REF="v$XML_VER"
+      PARSERS_REF="v$PARSERS_VER"
+CONTINUATIONS_REF=master #"v$CONTINUATIONS_VER"
+        SWING_REF="v$SWING_VER"
+      PARTEST_REF="v$PARTEST_VER"
+PARTEST_IFACE_REF="v$PARTEST_IFACE_VER"
+   SCALACHECK_REF=master # TODO: "1.11.2" when it's tagged (1.1.11 fails pom validation)
+
 
 # repo used to publish "locker" scala to (to start the bootstrap)
 # TODO: change to dedicated repo
-stagingCred="pr-scala"
-stagingRepo="http://private-repo.typesafe.com/typesafe/scala-pr-validation-snapshots/"
+stagingCred="private-repo"
+stagingRepo="http://private-repo.typesafe.com/typesafe/scala-release-temp/"
 publishTask=publish-signed #publish-local
 
 #####
 
 SCALA_VER="$SCALA_BASEVER$MAVEN_SUFFIX"
 
-baseDir=`pwd`
+baseDir=~/git/pr-scala/scratch #`pwd`
 
 
 # TODO: clean local repo, or publish to a fresh one
 
-# stApi="https://oss.sonatype.org/service/local/"
-# 
-# function st_curl(){
-#   curl -H "accept: application/json" --user $SONA_USER_TOKEN -s -o - $@
-# }
-# 
-# function st_stagingRepo() {
-#  st_curl "$stApi/staging/profile_repositories" | jq '.data[] | select(.profileName == "org.scala-lang") | .repositoryURI'
-# }
+stApi="https://oss.sonatype.org/service/local/"
+
+function st_curl(){
+  curl -H "accept: application/json" --user $SONA_USER_TOKEN -s -o - $@
+}
+
+function st_stagingRepoMostRecent() {
+ st_curl "$stApi/staging/profile_repositories" | jq '.data[] | select(.profileName == "org.scala-lang") | .repositoryURI' | tr -d \" | tail -n1
+}
 
 
 update() {
+  [[ -d $baseDir ]] || mkdir -p $baseDir
   cd $baseDir
   getOrUpdate $baseDir/$2 "https://github.com/$1/$2.git" $3
   cd $2
 }
 
 publishModules() {
-  publishTask=$1
-  sonaStaging=$2
-
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
-  update scala scala-xml "v$XML_VER"
+  update scala scala-xml "$XML_REF"
   sbt 'set version := "'$XML_VER'"' \
-      'set resolvers += "staging" at "'$stagingRepo'"'\
       'set scalaVersion := "'$SCALA_VER'"' \
-      clean test $publishTask
+      clean test publish-signed
 
-  update scala scala-parser-combinators "v$PARSERS_VER"
+  update scala scala-parser-combinators "$PARSERS_REF"
   sbt 'set version := "'$PARSERS_VER'"' \
-      'set resolvers += "'$stagingRepo'"'\
       'set scalaVersion := "'$SCALA_VER'"' \
-      clean test $publishTask
+      clean test publish-signed
 
-  update rickynils scalacheck $SCALACHECK_VER
+  update rickynils scalacheck $SCALACHECK_REF
   sbt 'set version := "'$SCALACHECK_VER'"' \
-      'set resolvers += "'$stagingRepo'"'\
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       clean test publish-local
 
-  update scala scala-partest "v$PARTEST_VER"
+  update scala scala-partest "$PARTEST_REF"
   sbt 'set version :="'$PARTEST_VER'"' \
-      'set resolvers += "'$stagingRepo'"'\
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
-      clean $publishTask
+      clean test publish-signed
 
-  update scala scala-partest-interface "v$PARTEST_IFACE_VER"
+  update scala scala-partest-interface "$PARTEST_IFACE_REF"
   sbt 'set version :="'$PARTEST_IFACE_VER'"' \
-      'set resolvers += "'$stagingRepo'"'\
       'set scalaVersion := "'$SCALA_VER'"' \
-      clean $publishTask
+      clean test publish-signed
+
+  update scala scala-continuations $CONTINUATIONS_REF
+  sbt 'set every version := "'$CONTINUATIONS_VER'"' \
+      'set every scalaVersion := "'$SCALA_VER'"' \
+      clean test publish-signed
+
+
+  update scala scala-swing "$SWING_REF"
+  sbt 'set version := "'$SWING_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      clean test publish-signed
+
 }
 
-update scala scala $SCALA_GITREF
+# Duplicated because I cannot for the life of me figure out how to pass in these quoted sbt commands as args to a bash function
+publishModulesPrivate() {
+  resolver='"scala-release-temp" at "'$stagingRepo'"'
+
+  # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
+  update scala scala-xml "$XML_REF"
+  sbt 'set version := "'$XML_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+  update scala scala-parser-combinators "$PARSERS_REF"
+  sbt 'set version := "'$PARSERS_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+  update rickynils scalacheck $SCALACHECK_REF
+  sbt 'set version := "'$SCALACHECK_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      'set every scalaBinaryVersion := "'$SCALA_VER'"' \
+      'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+  update scala scala-partest "$PARTEST_REF"
+  sbt 'set version :="'$PARTEST_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
+      'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+  update scala scala-partest-interface "$PARTEST_IFACE_REF"
+  sbt 'set version :="'$PARTEST_IFACE_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test $1
+
+  update scala scala-continuations $CONTINUATIONS_REF
+  sbt 'set every version := "'$CONTINUATIONS_VER'"' \
+      'set every scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers += $resolver"\
+        "set every publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+
+  update scala scala-swing "$SWING_REF"
+  sbt 'set version := "'$SWING_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers += $resolver"\
+        "set publishTo := Some($resolver)"\
+        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      clean test publish
+
+}
+
+update scala scala $SCALA_REF
 
 # publish core so that we can build modules with this version of Scala and publish them locally
 # must publish under $SCALA_VER so that the modules will depend on this (binary) version of Scala
@@ -102,16 +198,19 @@ ant -Dmaven.version.number=$SCALA_VER\
     -Dlocker.skip=1\
     publish
 
-echo "Scala core published to $stagingRepo"
 
 # build, test and publish modules with this core
-# resolve scala from $stagingRepo, publish to sonatype
-publishModules publish $stagingRepo
+# publish to our internal repo (so we can resolve the modules in the scala build below)
+publishModulesPrivate
+
+# TODO: close all open staging repos so that we can be reaonably sure the only open one we see after publishing below is ours
+# the ant call will create a new one
 
 # Rebuild Scala with these modules so that all binary versions are consistent.
 # Update versions.properties to new modules.
 # Sanity check: make sure the Scala test suite passes / docs can be generated with these modules.
 # don't skip locker (-Dlocker.skip=1\), or stability will fail
+# stage to sonatype, along with all modules
 cd $baseDir/scala
 ant -Dstarr.version=$SCALA_VER\
     -Dextra.repo.url=$stagingRepo\
@@ -120,19 +219,22 @@ ant -Dstarr.version=$SCALA_VER\
     -Dpartest.version.number=$PARTEST_VER\
     -Dscala-xml.version.number=$XML_VER\
     -Dscala-parser-combinators.version.number=$PARSERS_VER\
+    -Dscala-continuations.version.number=$CONTINUATIONS_VER\
+    -Dscala-swing.version.number=$SWING_VER\
     -Dscalacheck.version.number=$SCALACHECK_VER\
     -Dupdate.versions=1\
     -Dscalac.args.optimise=-optimise\
     nightly $publishTask
 
+# publish to sonatype
+publishModules
+
+echo $(st_stagingRepoMostRecent)
+
 git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
+# TODO: push to github
 
-# TODO: tag and submit PR
 # tag "v$SCALA_VER" "Scala v$SCALA_VER"
-
-# rebuild modules for good measure
-publishModules test
-
 
 # used when testing scalacheck integration with partest, while it's in staging repo before releasing it
 #     'set resolvers += "scalacheck staging" at "http://oss.sonatype.org/content/repositories/orgscalacheck-1010/"' \
