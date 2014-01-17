@@ -169,9 +169,9 @@ publishModulesPrivate() {
   update scala scala-continuations $CONTINUATIONS_REF
   sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers += $resolver"\
+        "set resolvers in ThisBuild += $resolver"\
         "set every publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+        'set credentials in ThisBuild += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
 
