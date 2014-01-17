@@ -1,6 +1,6 @@
 #!/bin/bash -ex
 # requirements:
-# - ~/.sonatype-token that does an export SONA_USER_TOKEN
+# - ~/.sonatype-curl that consists of user = USER:PASS
 # - ~/.m2/settings.xml with credentials for sonatype
     # <server>
     #   <id>private-repo</id>
