@@ -46,13 +46,15 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/pr-scala-common
 
 # ARGH trying to get this to work on multiple versions of sbt-extras...
-sbtArgs="-v -d -no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
+# the old version (on jenkins, and I don't want to upgrade for risk of breaking other builds) honors -sbt-dir
+# the new version of sbt-extras ignores sbt-dir, so we pass it in as -Dsbt.global.base
+# we use a per-project ivy home rather than the jenkins-global ~/.ivy to avoid artifact cross-pollination
+sbtArgs="-no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
 
 #parse_properties versions.properties
 
 
 # repo used to publish "locker" scala to (to start the bootstrap)
-# TODO: change to dedicated repo
 stagingCred="private-repo"
 stagingRepo="http://private-repo.typesafe.com/typesafe/scala-release-temp/"
 publishTask=publish-signed #publish-local
@@ -89,12 +91,14 @@ publishModules() {
   sbt $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
   sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update rickynils scalacheck $SCALACHECK_REF
@@ -111,18 +115,21 @@ publishModules() {
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-continuations $CONTINUATIONS_REF
   sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
 
@@ -130,6 +137,7 @@ publishModules() {
   sbt $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set resolvers += $resolver"\
+      "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
 }
