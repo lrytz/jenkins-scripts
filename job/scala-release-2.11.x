@@ -40,7 +40,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
-sbtArgs="-Dsbt.log.noformat=true"
+sbtArgs="-no-colors -no-share -sbt-dir ~/.sbt/0.13"
 
 #parse_properties versions.properties
 
