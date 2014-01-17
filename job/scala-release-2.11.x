@@ -49,7 +49,7 @@ publishTask=publish-signed #publish-local
 
 #####
 
-SCALA_VER="$SCALA_VERBASE$SCALA_VER_SUFFIX"
+SCALA_VER="$SCALA_VER_BASE$SCALA_VER_SUFFIX"
 
 baseDir=`pwd` # ~/git/pr-scala/scratch #
 
