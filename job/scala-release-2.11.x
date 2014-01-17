@@ -38,6 +38,8 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
+sbtArgs="-Dsbt.log.noformat=true"
+
 #parse_properties versions.properties
 
 
@@ -74,42 +76,42 @@ update() {
 publishModules() {
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
-  sbt 'set version := "'$XML_VER'"' \
+  sbt $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       clean test publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  sbt 'set version := "'$PARSERS_VER'"' \
+  sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       clean test publish-signed
 
   update rickynils scalacheck $SCALACHECK_REF
-  sbt 'set version := "'$SCALACHECK_VER'"' \
+  sbt $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       clean publish-local # test -- disabled because not stable under load :(
 
   update scala scala-partest "$PARTEST_REF"
-  sbt 'set version :="'$PARTEST_VER'"' \
+  sbt $sbtArgs 'set version :="'$PARTEST_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       clean test publish-signed
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  sbt 'set version :="'$PARTEST_IFACE_VER'"' \
+  sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       clean test publish-signed
 
   update scala scala-continuations $CONTINUATIONS_REF
-  sbt 'set every version := "'$CONTINUATIONS_VER'"' \
+  sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
       clean test publish-signed
 
 
   update scala scala-swing "$SWING_REF"
-  sbt 'set version := "'$SWING_VER'"' \
+  sbt $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       clean test publish-signed
 
@@ -121,7 +123,7 @@ publishModulesPrivate() {
 
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
-  sbt 'set version := "'$XML_VER'"' \
+  sbt $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
         "set resolvers += $resolver"\
         "set publishTo := Some($resolver)"\
@@ -129,7 +131,7 @@ publishModulesPrivate() {
       clean test publish
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  sbt 'set version := "'$PARSERS_VER'"' \
+  sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
         "set resolvers += $resolver"\
         "set publishTo := Some($resolver)"\
@@ -137,7 +139,7 @@ publishModulesPrivate() {
       clean test publish
 
   update rickynils scalacheck $SCALACHECK_REF
-  sbt 'set version := "'$SCALACHECK_VER'"' \
+  sbt $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
@@ -147,7 +149,7 @@ publishModulesPrivate() {
       clean test publish
 
   update scala scala-partest "$PARTEST_REF"
-  sbt 'set version :="'$PARTEST_VER'"' \
+  sbt $sbtArgs 'set version :="'$PARTEST_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
@@ -157,7 +159,7 @@ publishModulesPrivate() {
       clean test publish
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  sbt 'set version :="'$PARTEST_IFACE_VER'"' \
+  sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
         "set resolvers += $resolver"\
         "set publishTo := Some($resolver)"\
@@ -165,7 +167,7 @@ publishModulesPrivate() {
       clean test $1
 
   update scala scala-continuations $CONTINUATIONS_REF
-  sbt 'set every version := "'$CONTINUATIONS_VER'"' \
+  sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
         "set resolvers += $resolver"\
         "set every publishTo := Some($resolver)"\
@@ -174,7 +176,7 @@ publishModulesPrivate() {
 
 
   update scala scala-swing "$SWING_REF"
-  sbt 'set version := "'$SWING_VER'"' \
+  sbt $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
         "set resolvers += $resolver"\
         "set publishTo := Some($resolver)"\
