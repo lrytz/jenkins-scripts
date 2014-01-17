@@ -41,6 +41,9 @@ PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.2"}
        SCALACHECK_REF=${SCALACHECK_REF-"$SCALACHECK_VER"}
 
 
+baseDir=${baseDir-`pwd`}
+sbtCmd=${sbtCmd-sbt}
+
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
@@ -48,8 +51,9 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 # ARGH trying to get this to work on multiple versions of sbt-extras...
 # the old version (on jenkins, and I don't want to upgrade for risk of breaking other builds) honors -sbt-dir
 # the new version of sbt-extras ignores sbt-dir, so we pass it in as -Dsbt.global.base
-# we use a per-project ivy home rather than the jenkins-global ~/.ivy to avoid artifact cross-pollination
-sbtArgs="-no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
+# we must not change ivy home, as it has ~/.ivy2/.credentials,
+# but we don't want cross-pollination from the local ivy repo, so we use our own repositories-scala-release repo config
+sbtArgs="-no-colors -Dsbt.override.build.repos=true -Dsbt.repository.config=$scriptsDir/repositories-scala-release -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
 
 #parse_properties versions.properties
 
@@ -64,8 +68,6 @@ resolver='"scala-release-temp" at "'$stagingRepo'"'
 #####
 
 SCALA_VER="$SCALA_VER_BASE$SCALA_VER_SUFFIX"
-
-baseDir=`pwd` # ~/git/pr-scala/scratch #
 
 stApi="https://oss.sonatype.org/service/local/"
 
@@ -88,55 +90,48 @@ update() {
 publishModules() {
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
-  sbt $sbtArgs 'set version := "'$XML_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update rickynils scalacheck $SCALACHECK_REF
-  sbt $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
-      "set resolvers += $resolver"\
       clean publish-local # test -- disabled because not stable under load :(
 
   update scala scala-partest "$PARTEST_REF"
-  sbt $sbtArgs 'set version :="'$PARTEST_VER'"' \
+  $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
+  $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-continuations $CONTINUATIONS_REF
-  sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
+  $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
 
   update scala scala-swing "$SWING_REF"
-  sbt $sbtArgs 'set version := "'$SWING_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      "set resolvers += $resolver"\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
@@ -146,51 +141,46 @@ publishModules() {
 publishModulesPrivate() {
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
-  sbt $sbtArgs 'set version := "'$XML_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
   update rickynils scalacheck $SCALACHECK_REF
-  sbt $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean publish # test times out
 
   update scala scala-partest "$PARTEST_REF"
-  sbt $sbtArgs 'set version :="'$PARTEST_VER'"' \
+  $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
+  $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test $1
 
   update scala scala-continuations $CONTINUATIONS_REF
-  sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
+  $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
         "set resolvers in ThisBuild += $resolver"\
         "set every publishTo := Some($resolver)"\
@@ -199,11 +189,10 @@ publishModulesPrivate() {
 
 
   update scala scala-swing "$SWING_REF"
-  sbt $sbtArgs 'set version := "'$SWING_VER'"' \
+  $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers += $resolver"\
-        "set publishTo := Some($resolver)"\
-        'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
 }
