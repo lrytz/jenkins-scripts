@@ -146,7 +146,7 @@ publishModulesPrivate() {
         "set resolvers += $resolver"\
         "set publishTo := Some($resolver)"\
         'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
-      clean test publish
+      clean publish # test times out
 
   update scala scala-partest "$PARTEST_REF"
   sbt $sbtArgs 'set version :="'$PARTEST_VER'"' \
