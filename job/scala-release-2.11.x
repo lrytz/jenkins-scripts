@@ -40,7 +40,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
-sbtArgs="-no-colors -no-share -sbt-dir ~/.sbt/0.13"
+sbtArgs="-no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13"
 
 #parse_properties versions.properties
 
@@ -50,6 +50,8 @@ sbtArgs="-no-colors -no-share -sbt-dir ~/.sbt/0.13"
 stagingCred="private-repo"
 stagingRepo="http://private-repo.typesafe.com/typesafe/scala-release-temp/"
 publishTask=publish-signed #publish-local
+
+resolver='"scala-release-temp" at "'$stagingRepo'"'
 
 #####
 
@@ -80,11 +82,13 @@ publishModules() {
   update scala scala-xml "$XML_REF"
   sbt $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
   sbt $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
   update rickynils scalacheck $SCALACHECK_REF
@@ -92,6 +96,7 @@ publishModules() {
       'set scalaVersion := "'$SCALA_VER'"' \
       'set every scalaBinaryVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
+      "set resolvers += $resolver"\
       clean publish-local # test -- disabled because not stable under load :(
 
   update scala scala-partest "$PARTEST_REF"
@@ -99,30 +104,32 @@ publishModules() {
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   sbt $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
   update scala scala-continuations $CONTINUATIONS_REF
   sbt $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
 
   update scala scala-swing "$SWING_REF"
   sbt $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      "set resolvers += $resolver"\
       clean test publish-signed
 
 }
 
 # Duplicated because I cannot for the life of me figure out how to pass in these quoted sbt commands as args to a bash function
 publishModulesPrivate() {
-  resolver='"scala-release-temp" at "'$stagingRepo'"'
-
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
   sbt $sbtArgs 'set version := "'$XML_VER'"' \
