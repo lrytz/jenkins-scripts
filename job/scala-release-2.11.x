@@ -13,31 +13,32 @@
     # user=jenkinside
     # password=
 
+# defaults for jenkins params
+SCALA_VER_BASE        =    ${SCALA_VER_BASE-"2.11.0"}
+SCALA_VER_SUFFIX      =  ${SCALA_VER_SUFFIX-"-M8"}
+XML_VER               =           ${XML_VER-"1.0.0-RC7"}
+PARSERS_VER           =       ${PARSERS_VER-"1.0.0-RC5"}
+CONTINUATIONS_VER     = ${CONTINUATIONS_VER-"1.0.0-RC2"}
+SWING_VER             =         ${SWING_VER-"1.0.0-RC2"}
+PARTEST_VER           =       ${PARTEST_VER-"1.0.0-RC8"}
+PARTEST_IFACE_VER     = ${PARTEST_IFACE_VER-"0.2"}
+SCALACHECK_VER        =    ${SCALACHECK_VER-"1.11.2"}
+
+            SCALA_REF =         ${SCALA_REF-"master"}
+              XML_REF =           ${XML_REF-"v$XML_VER"}
+          PARSERS_REF =       ${PARSERS_REF-"v$PARSERS_VER"}
+    CONTINUATIONS_REF = ${CONTINUATIONS_REF-"v$CONTINUATIONS_VER"}
+            SWING_REF =         ${SWING_REF-"v$SWING_VER"}
+          PARTEST_REF =       ${PARTEST_REF-"v$PARTEST_VER"}
+    PARTEST_IFACE_REF = ${PARTEST_IFACE_REF-"v$PARTEST_IFACE_VER"}
+       SCALACHECK_REF =    ${SCALACHECK_REF-"$SCALACHECK_VER"}
+
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
 #parse_properties versions.properties
-
-        SCALA_REF="master"
-    SCALA_BASEVER="2.11.0"
-     MAVEN_SUFFIX="-M8"
-          XML_VER="1.0.0-RC7"
-      PARSERS_VER="1.0.0-RC5"
-CONTINUATIONS_VER="1.0.0-RC2"
-        SWING_VER="1.0.0-RC2"
-      PARTEST_VER="1.0.0-RC8"
-PARTEST_IFACE_VER="0.2"
-   SCALACHECK_VER="1.11.2"
-
-          XML_REF="v$XML_VER"
-      PARSERS_REF="v$PARSERS_VER"
-CONTINUATIONS_REF=master #"v$CONTINUATIONS_VER"
-        SWING_REF="v$SWING_VER"
-      PARTEST_REF="v$PARTEST_VER"
-PARTEST_IFACE_REF="v$PARTEST_IFACE_VER"
-   SCALACHECK_REF=master # TODO: "1.11.2" when it's tagged (1.1.11 fails pom validation)
 
 
 # repo used to publish "locker" scala to (to start the bootstrap)
@@ -48,7 +49,7 @@ publishTask=publish-signed #publish-local
 
 #####
 
-SCALA_VER="$SCALA_BASEVER$MAVEN_SUFFIX"
+SCALA_VER="$SCALA_VERBASE$SCALA_VER_SUFFIX"
 
 baseDir=`pwd` # ~/git/pr-scala/scratch #
 
@@ -210,9 +211,10 @@ publishModulesPrivate
 # don't skip locker (-Dlocker.skip=1\), or stability will fail
 # stage to sonatype, along with all modules
 cd $baseDir/scala
+git clean -fxd
 ant -Dstarr.version=$SCALA_VER\
     -Dextra.repo.url=$stagingRepo\
-    -Dmaven.version.suffix=$MAVEN_SUFFIX\
+    -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
     -Dscala.binary.version=$SCALA_VER\
     -Dpartest.version.number=$PARTEST_VER\
     -Dscala-xml.version.number=$XML_VER\
@@ -227,9 +229,10 @@ ant -Dstarr.version=$SCALA_VER\
 # publish to sonatype
 publishModules
 
-echo "Published to sonatype staging repo $(st_stagingRepoMostRecent)"
+echo "Published to sonatype staging repo $(st_stagingRepoMostRecent), which may now be closed."
+echo "Update versions.properties, tag as $vSCALA_VER, and run scala-release-2.11.x."
 
-git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
+# git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
 # TODO: push to github
 
 # tag "v$SCALA_VER" "Scala v$SCALA_VER"
