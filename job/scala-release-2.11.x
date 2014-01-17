@@ -12,6 +12,8 @@
     # host=private-repo.typesafe.com
     # user=jenkinside
     # password=
+# - ~/.sbt/0.13/plugins/gpg.sbt with:
+#   addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.1")
 
 # defaults for jenkins params
    SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
