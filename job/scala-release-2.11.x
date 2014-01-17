@@ -7,7 +7,12 @@
     #   <username>jenkinside</username>
     #   <password></password>
     # </server>
-# - ~/.ivy2/.credentials-private-repo as follows:
+# - ~/.ivy2/.credentials (for sonatype)
+    # realm=Sonatype Nexus Repository Manager
+    # host=oss.sonatype.org
+    # user=lamp
+    # password=
+# - ~/.ivy2/.credentials-private-repo for private-repo.typesafe.com, as follows:
     # realm=Artifactory Realm
     # host=private-repo.typesafe.com
     # user=jenkinside
@@ -40,7 +45,8 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
-sbtArgs="-no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13"
+# ARGH trying to get this to work on multiple versions of sbt-extras...
+sbtArgs="-v -d -no-colors -Dsbt.ivy.home=project/.ivy -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
 
 #parse_properties versions.properties
 
