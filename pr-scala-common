@@ -49,9 +49,13 @@ function getOrUpdate(){
 
     git checkout -q FETCH_HEAD
 
+    git reset --hard FETCH_HEAD
+
     git clean -fxd
 
     git log --oneline -1
+
+    git status
 
     popd
 }

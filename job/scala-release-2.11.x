@@ -206,7 +206,7 @@ publishModulesPrivate() {
 
 
 update scala scala $SCALA_REF
-git status
+
 # publish core so that we can build modules with this version of Scala and publish them locally
 # must publish under $SCALA_VER so that the modules will depend on this (binary) version of Scala
 # publish more than just core: partest needs scalap
