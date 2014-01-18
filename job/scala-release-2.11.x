@@ -61,7 +61,6 @@ sbtArgs="-no-colors -Dsbt.override.build.repos=true -Dsbt.repository.config=$scr
 # repo used to publish "locker" scala to (to start the bootstrap)
 stagingCred="private-repo"
 stagingRepo="http://private-repo.typesafe.com/typesafe/scala-release-temp/"
-publishTask=publish-signed #publish-local
 
 resolver='"scala-release-temp" at "'$stagingRepo'"'
 
@@ -93,20 +92,13 @@ publishModules() {
   $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set pgpPassphrase := Some(Array.empty)"\
-      publish-signed
+      clean test publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
-
-  update rickynils scalacheck $SCALACHECK_REF
-  $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set every scalaBinaryVersion := "'$SCALA_VER'"' \
-      'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
-      clean publish-local # test -- disabled because not stable under load :(
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
@@ -127,7 +119,6 @@ publishModules() {
       'set every scalaVersion := "'$SCALA_VER'"' \
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
-
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
@@ -239,7 +230,7 @@ publishModulesPrivate() {
 #     -Dscalacheck.version.number=$SCALACHECK_VER\
 #     -Dupdate.versions=1\
 #     -Dscalac.args.optimise=-optimise\
-#     nightly $publishTask
+#     nightly publish-signed
 
 # publish to sonatype
 publishModules
