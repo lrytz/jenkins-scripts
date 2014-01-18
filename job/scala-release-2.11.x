@@ -91,12 +91,14 @@ publishModules() {
   update scala scala-xml "$XML_REF"
   $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
@@ -105,24 +107,28 @@ publishModules() {
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-continuations $CONTINUATIONS_REF
   $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)"\
       clean test publish-signed
 
