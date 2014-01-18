@@ -210,27 +210,27 @@ publishModulesPrivate() {
 # # TODO: close all open staging repos so that we can be reaonably sure the only open one we see after publishing below is ours
 # # the ant call will create a new one
 # 
-# # Rebuild Scala with these modules so that all binary versions are consistent.
-# # Update versions.properties to new modules.
-# # Sanity check: make sure the Scala test suite passes / docs can be generated with these modules.
-# # don't skip locker (-Dlocker.skip=1\), or stability will fail
-# # stage to sonatype, along with all modules
-# cd $baseDir/scala
-# git clean -fxd
-# ant -Dstarr.version=$SCALA_VER\
-#     -Dextra.repo.url=$stagingRepo\
-#     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
-#     -Dscala.binary.version=$SCALA_VER\
-#     -Dpartest.version.number=$PARTEST_VER\
-#     -Dscala-xml.version.number=$XML_VER\
-#     -Dscala-parser-combinators.version.number=$PARSERS_VER\
-#     -Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER\
-#     -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
-#     -Dscala-swing.version.number=$SWING_VER\
-#     -Dscalacheck.version.number=$SCALACHECK_VER\
-#     -Dupdate.versions=1\
-#     -Dscalac.args.optimise=-optimise\
-#     nightly publish-signed
+# Rebuild Scala with these modules so that all binary versions are consistent.
+# Update versions.properties to new modules.
+# Sanity check: make sure the Scala test suite passes / docs can be generated with these modules.
+# don't skip locker (-Dlocker.skip=1\), or stability will fail
+# stage to sonatype, along with all modules
+cd $baseDir/scala
+#git clean -fxd
+ant -Dstarr.version=$SCALA_VER\
+    -Dextra.repo.url=$stagingRepo\
+    -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
+    -Dscala.binary.version=$SCALA_VER\
+    -Dpartest.version.number=$PARTEST_VER\
+    -Dscala-xml.version.number=$XML_VER\
+    -Dscala-parser-combinators.version.number=$PARSERS_VER\
+    -Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER\
+    -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
+    -Dscala-swing.version.number=$SWING_VER\
+    -Dscalacheck.version.number=$SCALACHECK_VER\
+    -Dupdate.versions=1\
+    -Dscalac.args.optimise=-optimise\
+    publish-signed # nightly
 
 # publish to sonatype
 publishModules
