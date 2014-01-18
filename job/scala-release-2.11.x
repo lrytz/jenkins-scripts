@@ -68,16 +68,31 @@ resolver='"scala-release-temp" at "'$stagingRepo'"'
 
 SCALA_VER="$SCALA_VER_BASE$SCALA_VER_SUFFIX"
 
-stApi="https://oss.sonatype.org/service/local/"
+stApi="https://oss.sonatype.org/service/local"
 
 function st_curl(){
-  curl -H "accept: application/json" -K ~/.sonatype-curl -s -o - $@
+  curl -H "Content-Type: application/json" -H "accept: application/json,application/vnd.siesta-error-v1+json,application/vnd.siesta-validation-errors-v1+json"  -K ~/.sonatype-curl -s -o - $@
 }
 
-function st_stagingRepoMostRecent() {
- st_curl "$stApi/staging/profile_repositories" | jq '.data[] | select(.profileName == "org.scala-lang") | .repositoryURI' | tr -d \" | tail -n1
+function st_stagingReposOpen() {
+ st_curl "$stApi/staging/profile_repositories" | jq '.data[] | select(.profileName == "org.scala-lang") | select(.type == "open")'
 }
 
+function st_stagingRepoDrop() {
+  repo=$1
+  message=$2
+  data=$(mktemp -t data)
+  echo "{\"data\":{\"description\":\"$message\",\"stagedRepositoryIds\":[\"$repo\"]}}" > $data
+  st_curl -X POST -d @$data "$stApi/staging/bulk/drop"
+}
+
+function st_stagingRepoClose() {
+  repo=$1
+  message=$2
+  data=$(mktemp -t data)
+  echo "{\"data\":{\"description\":\"$message\",\"stagedRepositoryIds\":[\"$repo\"]}}" > $data
+  st_curl -X POST -d @$data "$stApi/staging/bulk/close"
+}
 
 update() {
   [[ -d $baseDir ]] || mkdir -p $baseDir
@@ -86,21 +101,20 @@ update() {
   cd $2
 }
 
-publishModules() {
+# build/test/publish scala core modules to sonatype
+buildModules() {
   # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
   $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
@@ -108,35 +122,31 @@ publishModules() {
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   update scala scala-continuations $CONTINUATIONS_REF
   $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      clean test publish-signed
-
+      "set pgpPassphrase := Some(Array.empty)" $@
 }
 
+
+# test and publish to $stagingRepo
 # Duplicated because I cannot for the life of me figure out how to pass in these quoted sbt commands as args to a bash function
 publishModulesPrivate() {
-  # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
   update scala scala-xml "$XML_REF"
   $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
@@ -194,25 +204,27 @@ publishModulesPrivate() {
 
 }
 
-# update scala scala $SCALA_REF
-# 
-# # publish core so that we can build modules with this version of Scala and publish them locally
-# # must publish under $SCALA_VER so that the modules will depend on this (binary) version of Scala
-# # publish more than just core: partest needs scalap
-# ant -Dmaven.version.number=$SCALA_VER\
-#     -Dremote.snapshot.repository=NOPE\
-#     -Drepository.credentials.id=$stagingCred\
-#     -Dremote.release.repository=$stagingRepo\
-#     -Dscalac.args.optimise=-optimise\
-#     -Ddocs.skip=1\
-#     -Dlocker.skip=1\
-#     publish
-# 
-# 
-# # build, test and publish modules with this core
-# # publish to our internal repo (so we can resolve the modules in the scala build below)
-# publishModulesPrivate
-# 
+
+update scala scala $SCALA_REF
+
+# publish core so that we can build modules with this version of Scala and publish them locally
+# must publish under $SCALA_VER so that the modules will depend on this (binary) version of Scala
+# publish more than just core: partest needs scalap
+ant -Dmaven.version.number=$SCALA_VER\
+    -Dremote.snapshot.repository=NOPE\
+    -Drepository.credentials.id=$stagingCred\
+    -Dremote.release.repository=$stagingRepo\
+    -Dscalac.args.optimise=-optimise\
+    -Ddocs.skip=1\
+    -Dlocker.skip=1\
+    publish
+
+
+# build, test and publish modules with this core
+# publish to our internal repo (so we can resolve the modules in the scala build below)
+publishModulesPrivate
+
+
 # # TODO: close all open staging repos so that we can be reaonably sure the only open one we see after publishing below is ours
 # # the ant call will create a new one
 # 
@@ -221,28 +233,57 @@ publishModulesPrivate() {
 # Sanity check: make sure the Scala test suite passes / docs can be generated with these modules.
 # don't skip locker (-Dlocker.skip=1\), or stability will fail
 # stage to sonatype, along with all modules
-# cd $baseDir/scala
-# git clean -fxd
-# ant -Dstarr.version=$SCALA_VER\
-#     -Dextra.repo.url=$stagingRepo\
-#     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
-#     -Dscala.binary.version=$SCALA_VER\
-#     -Dpartest.version.number=$PARTEST_VER\
-#     -Dscala-xml.version.number=$XML_VER\
-#     -Dscala-parser-combinators.version.number=$PARSERS_VER\
-#     -Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER\
-#     -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
-#     -Dscala-swing.version.number=$SWING_VER\
-#     -Dscalacheck.version.number=$SCALACHECK_VER\
-#     -Dupdate.versions=1\
-#     -Dscalac.args.optimise=-optimise\
-#     nightly publish-signed
+cd $baseDir/scala
+git clean -fxd
+ant -Dstarr.version=$SCALA_VER\
+    -Dextra.repo.url=$stagingRepo\
+    -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
+    -Dscala.binary.version=$SCALA_VER\
+    -Dpartest.version.number=$PARTEST_VER\
+    -Dscala-xml.version.number=$XML_VER\
+    -Dscala-parser-combinators.version.number=$PARSERS_VER\
+    -Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER\
+    -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
+    -Dscala-swing.version.number=$SWING_VER\
+    -Dscalacheck.version.number=$SCALACHECK_VER\
+    -Dupdate.versions=1\
+    -Dscalac.args.optimise=-optimise\
+    nightly publish-signed
+
+open=$(st_stagingReposOpen)
+lastOpenId=$(echo $open | jq  '.repositoryId' | tr -d \" | tail -n1)
+lastOpenUrl=$(echo $open | jq  '.repositoryURI' | tr -d \" | tail -n1)
+allOpen=$(echo $open | jq  '.repositoryId' | tr -d \")
+
+echo "Most recent staging repo url: $lastOpenUrl"
+echo "All open: $allOpen"
 
 # publish to sonatype
-publishModules
+buildModules clean test publish-signed
 
-echo "Published to sonatype staging repo $(st_stagingRepoMostRecent), which may now be closed."
-echo "Update versions.properties, tag as $vSCALA_VER, and run scala-release-2.11.x."
+# was hoping we could make everything go to the same staging repo, but it's not timing that causes two staging repos to be opened
+# -- maybe user-agent or something? WHY IS EVERYTHING SO HARD
+# cd $baseDir/scala
+# should not rebuild (already did nightly above), so -Dscalac.args.optimise should be irrelevant
+# all versions have also been serialized to versions.properties
+# skip locker since we're building with starr M8
+# ant -Dextra.repo.url=$stagingRepo\
+#     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
+#     -Dscalac.args.optimise=-optimise\
+#     -Dlocker.skip=1\
+#     publish-signed
+# buildModules publish
+
+open=$(st_stagingReposOpen)
+lastOpenId=$(echo $open | jq  '.repositoryId' | tr -d \" | tail -n1)
+lastOpenUrl=$(echo $open | jq  '.repositoryURI' | tr -d \" | tail -n1)
+allOpen=$(echo $open | jq  '.repositoryId' | tr -d \")
+
+echo "Most recent staging repo url: $lastOpenUrl"
+echo "All open: $allOpen"
+
+echo "Published to sonatype staging repo $lastOpenUrl, which may now be closed."
+echo "Update versions.properties, tag as $vSCALA_VER, publish 3rd-party modules (scalacheck, scalatest, akka-actor) against scala in the staging repo, and run scala-release-2.11.x."
 
 # git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
 # TODO: push to github
