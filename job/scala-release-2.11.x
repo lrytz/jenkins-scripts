@@ -275,15 +275,15 @@ buildModules clean test publish-signed
 # buildModules publish
 
 open=$(st_stagingReposOpen)
-lastOpenId=$(echo $open | jq  '.repositoryId' | tr -d \" | tail -n1)
-lastOpenUrl=$(echo $open | jq  '.repositoryURI' | tr -d \" | tail -n1)
+allOpenUrls=$(echo $open | jq  '.repositoryURI' | tr -d \")
 allOpen=$(echo $open | jq  '.repositoryId' | tr -d \")
 
-echo "Most recent staging repo url: $lastOpenUrl"
-echo "All open: $allOpen"
+echo "Closing open repos: $allOpen"
 
-echo "Published to sonatype staging repo $lastOpenUrl, which may now be closed."
-echo "Update versions.properties, tag as $vSCALA_VER, publish 3rd-party modules (scalacheck, scalatest, akka-actor) against scala in the staging repo, and run scala-release-2.11.x."
+for repo in $allOpen; do st_stagingRepoClose $repo; done
+
+echo "Closed sonatype staging repos: $allOpenUrls."
+echo "Update versions.properties, tag as v$SCALA_VER, publish 3rd-party modules (scalacheck, scalatest, akka-actor) against scala in the staging repo, and run scala-release-2.11.x."
 
 # git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
 # TODO: push to github
