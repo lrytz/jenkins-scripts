@@ -1,5 +1,10 @@
 #!/bin/bash -ex
 
-java -Dsbt.log.noformat=true -Dsbt.override.build.repos=true -Dsbt.repository.config=$WORKSPACE/repositories \
+echo "Using repo config:"
+cat repositories
+
+rm -rf $WORKSPACE/.ivy2
+
+java -Dsbt.log.noformat=true -Dsbt.ivy.home=$WORKSPACE/.ivy2 -Dsbt.override.build.repos=true -Dsbt.repository.config=$WORKSPACE/repositories \
   -jar /home/jenkins/apps/sbt/sbt-launch-0.13.0.jar \
-  s3-upload
+  clean update s3-upload
