@@ -20,6 +20,10 @@
 # - ~/.sbt/0.13/plugins/gpg.sbt with:
 #   addSbtPlugin("com.typesafe.sbt" % "sbt-pgp" % "0.8.1")
 
+# TODO: run this on a nightly basis, derive version number from tag
+# (untagged: -SNAPSHOT, publish to sonatype snapshots,
+#  tagged: $TAG, publish to sonatype staging and close repo -- let the humans release)
+
 # defaults for jenkins params
    SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
 SCALA_VER_SUFFIX=${SCALA_VER_SUFFIX-"-M8"}
@@ -137,6 +141,8 @@ buildModules() {
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)" $@
+
+  # TODO: actors-migration, akka-actor
 }
 
 
@@ -198,6 +204,7 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
+  # TODO: scalatest
 }
 
 
@@ -247,6 +254,11 @@ ant -Dstarr.version=$SCALA_VER\
     nightly publish-signed
 
 
+# TODO: create PR with following commit (note that release will have been tagged already)
+# git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
+
+
+
 # overwrite "locker" version of scala at private-repo with bootstrapped version
 ant -Dmaven.version.number=$SCALA_VER\
     -Dremote.snapshot.repository=NOPE\
@@ -287,14 +299,15 @@ echo "Closing open repos: $allOpen"
 for repo in $allOpen; do st_stagingRepoClose $repo; done
 
 echo "Closed sonatype staging repos: $allOpenUrls."
-echo "Update versions.properties, tag as v$SCALA_VER, publish 3rd-party modules (scalacheck, scalatest, akka-actor) against scala in the staging repo, and run scala-release-2.11.x."
+echo "Update versions.properties, tag as v$SCALA_VER, publish 3rd-party modules (scalacheck, scalatest, akka-actor) against scala in the staging repo, and run scala-release-2.11.x-[unix|windows]."
 
-# git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
-# TODO: push to github
 
-# tag "v$SCALA_VER" "Scala v$SCALA_VER"
-
-# used when testing scalacheck integration with partest, while it's in staging repo before releasing it
-#     'set resolvers += "scalacheck staging" at "http://oss.sonatype.org/content/repositories/orgscalacheck-1010/"' \
-# in ant: ()
-#     -Dextra.repo.url=http://oss.sonatype.org/content/repositories/orgscalacheck-1010/\
+# TODO:
+# stagingReposConfig= name: repoUrl for each repoUrl in allOpenUrls
+# cat > repositories <<THE_END
+# [repositories]
+#   plugins: http://dl.bintray.com/sbt/sbt-plugin-releases/, [organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+#   typesafe: http://repo.typesafe.com/typesafe/ivy-releases/, [organisation]/[module]/(scala_[scalaVersion]/)(sbt_[sbtVersion]/)[revision]/[type]s/[artifact](-[classifier]).[ext]
+#   $stagingReposConfig
+#   maven-central
+# THE_END
