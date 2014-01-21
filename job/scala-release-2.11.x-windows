@@ -1,5 +1,5 @@
 #!C:\cygwin\bin\bash.exe -ex
 
-java -Dsbt.log.noformat=true -Dsbt.override.build.repos=true -Dsbt.repository.config=$WORKSPACE/repositories \
+java -Dsbt.log.noformat=true -Dsbt.override.build.repos=true -Dsbt.repository.config=repositories \
   -jar C:/cygwin/home/scala/sbt-launch-0.13.0.jar \
   s3-upload
