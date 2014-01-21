@@ -1,5 +1,5 @@
 #!/bin/bash -ex
 
-java -Dsbt.log.noformat=true -jar /home/jenkins/apps/sbt/sbt-launch-0.13.0.jar \
-  "set resolvers += \"staging\" at \"${stagingRepoURL}\""\
+java -Dsbt.log.noformat=true -Dsbt.override.build.repos=true -Dsbt.repository.config=$WORKSPACE/repositories \
+  -jar /home/jenkins/apps/sbt/sbt-launch-0.13.0.jar \
   s3-upload
