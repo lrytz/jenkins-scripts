@@ -246,6 +246,14 @@ ant -Dstarr.version=$SCALA_VER\
     -Dscalac.args.optimise=-optimise\
     nightly publish-signed
 
+
+# overwrite "locker" version of scala at private-repo with bootstrapped version
+ant -Dmaven.version.number=$SCALA_VER\
+    -Dremote.snapshot.repository=NOPE\
+    -Drepository.credentials.id=$stagingCred\
+    -Dremote.release.repository=$stagingRepo\
+    publish
+
 open=$(st_stagingReposOpen)
 lastOpenId=$(echo $open | jq  '.repositoryId' | tr -d \" | tail -n1)
 lastOpenUrl=$(echo $open | jq  '.repositoryURI' | tr -d \" | tail -n1)
