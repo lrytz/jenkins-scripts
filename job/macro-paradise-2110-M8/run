@@ -23,7 +23,7 @@ plugin=( $(pwd)/plugin/target/scala-2.11.0-M8/paradise_*.jar )
 # TODO: make all the tests pass
 # current failures are quite minor, but it's still annoying
 cd "$script_dir/scala"
-git checkout v2.11.0-M7
+git checkout v2.11.0-M8
 git apply "$script_dir/test_fixup.patch"
 
 # STEP 4: BOOTSTRAP SCALAC USING THE PARADISE PLUGIN
