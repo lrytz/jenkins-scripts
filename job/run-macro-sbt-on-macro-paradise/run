@@ -20,3 +20,4 @@ cp out.check sbt-example-paradise/out.check
 cd sbt-example-paradise
 verify 2.10.3
 verify 2.11.0-M7
+verify 2.11.0-M8
