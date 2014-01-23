@@ -142,7 +142,14 @@ buildModules() {
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)" $@
 
-  # TODO: actors-migration, akka-actor
+  # TODO: actors-migration
+  #
+
+  # TODO: akka-actor
+  # script: akka/project/script/release
+  # sbt tasks: akka-actor/publishLocal, akka-actor-tests/test and akka-actor/publishSigned.
+  # properties: "-Dakka.genjavadoc.enabled=true -Dpublish.maven.central=true”.
+  # branch: wip-2.2.3-for-scala-2.11
 }
 
 
