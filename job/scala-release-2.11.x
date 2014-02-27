@@ -34,7 +34,7 @@
            SWING_VER=${SWING_VER-"1.0.0"}
 ACTORS_MIGRATION_VER=${ACTORS_MIGRATION_VER-"1.0.0"}
          PARTEST_VER=${PARTEST_VER-"1.0.0"}
-   PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.2"}
+   PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.4.0"}
       SCALACHECK_VER=${SCALACHECK_VER-"1.11.3"}
 
            SCALA_REF=${SCALA_REF-"master"}
@@ -49,6 +49,7 @@ ACTORS_MIGRATION_REF=${ACTORS_MIGRATION_REF-"v$ACTORS_MIGRATION_VER"}
 
 baseDir=${baseDir-`pwd`}
 sbtCmd=${sbtCmd-sbt}
+antBuildTask=${antBuildTask-nightly}
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
@@ -61,6 +62,7 @@ mkdir -p $baseDir/ivy2
 # ARGH trying to get this to work on multiple versions of sbt-extras...
 # the old version (on jenkins, and I don't want to upgrade for risk of breaking other builds) honors -sbt-dir
 # the new version of sbt-extras ignores sbt-dir, so we pass it in as -Dsbt.global.base
+# need to set sbt-dir to one that has the gpg.sbt plugin config
 sbtArgs="-no-colors -ivy $baseDir/ivy2 -Dsbt.override.build.repos=true -Dsbt.repository.config=$scriptsDir/repositories-scala-release -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
 
 #parse_properties versions.properties
@@ -264,7 +266,7 @@ ant -Dstarr.version=$SCALA_VER\
     -Dscalacheck.version.number=$SCALACHECK_VER\
     -Dupdate.versions=1\
     -Dscalac.args.optimise=-optimise\
-    build-opt publish-signed # TODO: reset to nightly for extra sanity check
+    $antBuildTask publish-signed
 
 
 # TODO: create PR with following commit (note that release will have been tagged already)
