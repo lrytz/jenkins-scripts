@@ -1,5 +1,6 @@
 #!/bin/bash -ex
 # requirements:
+# sbtCmd must point to sbt from sbt-extras (this is the standard on the Scala jenkins, so we only support that one)
 # - ~/.sonatype-curl that consists of user = USER:PASS
 # - ~/.m2/settings.xml with credentials for sonatype
     # <server>
@@ -25,25 +26,26 @@
 #  tagged: $TAG, publish to sonatype staging and close repo -- let the humans release)
 
 # defaults for jenkins params
-   SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
-SCALA_VER_SUFFIX=${SCALA_VER_SUFFIX-"-M8"}
-          XML_VER=${XML_VER-"1.0.0-RC7"}
-      PARSERS_VER=${PARSERS_VER-"1.0.0-RC5"}
-CONTINUATIONS_VER=${CONTINUATIONS_VER-"1.0.0-RC3"}
-        SWING_VER=${SWING_VER-"1.0.0-RC2"}
-      PARTEST_VER=${PARTEST_VER-"1.0.0-RC8"}
-PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.2"}
-   SCALACHECK_VER=${SCALACHECK_VER-"1.11.2"}
+      SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
+    SCALA_VER_SUFFIX=${SCALA_VER_SUFFIX-"-RC1"}
+             XML_VER=${XML_VER-"1.0.0"}
+         PARSERS_VER=${PARSERS_VER-"1.0.0"}
+   CONTINUATIONS_VER=${CONTINUATIONS_VER-"1.0.0"}
+           SWING_VER=${SWING_VER-"1.0.0"}
+ACTORS_MIGRATION_VER=${ACTORS_MIGRATION_VER-"1.0.0"}
+         PARTEST_VER=${PARTEST_VER-"1.0.0"}
+   PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.2"}
+      SCALACHECK_VER=${SCALACHECK_VER-"1.11.3"}
 
-            SCALA_REF=${SCALA_REF-"master"}
-              XML_REF=${XML_REF-"v$XML_VER"}
-          PARSERS_REF=${PARSERS_REF-"v$PARSERS_VER"}
-    CONTINUATIONS_REF=${CONTINUATIONS_REF-"v$CONTINUATIONS_VER"}
-            SWING_REF=${SWING_REF-"v$SWING_VER"}
-          PARTEST_REF=${PARTEST_REF-"v$PARTEST_VER"}
-    PARTEST_IFACE_REF=${PARTEST_IFACE_REF-"v$PARTEST_IFACE_VER"}
-       SCALACHECK_REF=${SCALACHECK_REF-"$SCALACHECK_VER"}
-
+           SCALA_REF=${SCALA_REF-"master"}
+             XML_REF=${XML_REF-"v$XML_VER"}
+         PARSERS_REF=${PARSERS_REF-"v$PARSERS_VER"}
+   CONTINUATIONS_REF=${CONTINUATIONS_REF-"v$CONTINUATIONS_VER"}
+           SWING_REF=${SWING_REF-"v$SWING_VER"}
+ACTORS_MIGRATION_REF=${ACTORS_MIGRATION_REF-"v$ACTORS_MIGRATION_VER"}
+         PARTEST_REF=${PARTEST_REF-"v$PARTEST_VER"}
+   PARTEST_IFACE_REF=${PARTEST_IFACE_REF-"v$PARTEST_IFACE_VER"}
+      SCALACHECK_REF=${SCALACHECK_REF-"$SCALACHECK_VER"}
 
 baseDir=${baseDir-`pwd`}
 sbtCmd=${sbtCmd-sbt}
@@ -142,8 +144,11 @@ buildModules() {
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)" $@
 
-  # TODO: actors-migration
-  #
+  update scala actors-migration "$ACTORS_MIGRATION_REF"
+  $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      "set pgpPassphrase := Some(Array.empty)" $@
 
   # TODO: akka-actor
   # script: akka/project/script/release
@@ -153,8 +158,7 @@ buildModules() {
 }
 
 
-# test and publish to $stagingRepo
-# Duplicated because I cannot for the life of me figure out how to pass in these quoted sbt commands as args to a bash function
+# test and publish modules necessary to bootstrap Scala to $stagingRepo
 publishModulesPrivate() {
   update scala scala-xml "$XML_REF"
   $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
@@ -203,7 +207,6 @@ publishModulesPrivate() {
         'set credentials in ThisBuild += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
-
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
@@ -211,15 +214,15 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
       clean test publish
 
-  # TODO: scalatest
 }
-
 
 update scala scala $SCALA_REF
 
-# publish core so that we can build modules with this version of Scala and publish them locally
+# for bootstrapping, publish core (or at least smallest subset we can get away with)
+# so that we can build modules with this version of Scala and publish them locally
 # must publish under $SCALA_VER so that the modules will depend on this (binary) version of Scala
 # publish more than just core: partest needs scalap
+# in sabbus lingo, the resulting Scala build will be used as starr to build the released Scala compiler
 ant -Dmaven.version.number=$SCALA_VER\
     -Dremote.snapshot.repository=NOPE\
     -Drepository.credentials.id=$stagingCred\
@@ -232,6 +235,7 @@ ant -Dmaven.version.number=$SCALA_VER\
 
 # build, test and publish modules with this core
 # publish to our internal repo (so we can resolve the modules in the scala build below)
+# we only need to build the modules necessary to build Scala itself
 publishModulesPrivate
 
 
@@ -263,7 +267,6 @@ ant -Dstarr.version=$SCALA_VER\
 
 # TODO: create PR with following commit (note that release will have been tagged already)
 # git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
-
 
 
 # overwrite "locker" version of scala at private-repo with bootstrapped version
