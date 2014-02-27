@@ -55,6 +55,7 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/pr-scala-common
 
 # we must change ivy home to get a fresh ivy cache, otherwise we get half-bootstrapped scala
+rm -rf $baseDir/ivy2 # in case it existed... we don't clear the ws since that clobbers the git clones needlessly
 mkdir -p $baseDir/ivy2
 
 # ARGH trying to get this to work on multiple versions of sbt-extras...
