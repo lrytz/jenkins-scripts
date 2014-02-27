@@ -54,12 +54,13 @@ scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 
+# we must change ivy home to get a fresh ivy cache, otherwise we get half-bootstrapped scala
+mkdir -p $baseDir/ivy2
+
 # ARGH trying to get this to work on multiple versions of sbt-extras...
 # the old version (on jenkins, and I don't want to upgrade for risk of breaking other builds) honors -sbt-dir
 # the new version of sbt-extras ignores sbt-dir, so we pass it in as -Dsbt.global.base
-# we must not change ivy home, as it has ~/.ivy2/.credentials,
-# but we don't want cross-pollination from the local ivy repo, so we use our own repositories-scala-release repo config
-sbtArgs="-no-colors -Dsbt.override.build.repos=true -Dsbt.repository.config=$scriptsDir/repositories-scala-release -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
+sbtArgs="-no-colors -ivy $baseDir/ivy2 -Dsbt.override.build.repos=true -Dsbt.repository.config=$scriptsDir/repositories-scala-release -Dsbt.global.base=$HOME/.sbt/0.13 -sbt-dir $HOME/.sbt/0.13"
 
 #parse_properties versions.properties
 
@@ -262,7 +263,7 @@ ant -Dstarr.version=$SCALA_VER\
     -Dscalacheck.version.number=$SCALACHECK_VER\
     -Dupdate.versions=1\
     -Dscalac.args.optimise=-optimise\
-    nightly publish-signed
+    build-opt publish-signed # TODO: reset to nightly for extra sanity check
 
 
 # TODO: create PR with following commit (note that release will have been tagged already)
@@ -275,6 +276,9 @@ ant -Dmaven.version.number=$SCALA_VER\
     -Drepository.credentials.id=$stagingCred\
     -Dremote.release.repository=$stagingRepo\
     publish
+
+# clear ivy cache so the next round of building modules sees the fresh scala
+rm -rf $baseDir/ivy2/cache
 
 open=$(st_stagingReposOpen)
 lastOpenId=$(echo $open | jq  '.repositoryId' | tr -d \" | tail -n1)
