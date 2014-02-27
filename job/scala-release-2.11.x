@@ -154,7 +154,7 @@ publishModulesPrivate() {
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
-      clean test publish
+      clean publish #test --  can't test against half-bootstrapped scala due to binary incompatibility, will test once bootstrapped
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
