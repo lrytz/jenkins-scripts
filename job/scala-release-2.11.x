@@ -123,7 +123,7 @@ buildModules() {
       "set pgpPassphrase := Some(Array.empty)"\
       'set version := "'$XML_VER'-DOC"' \
       doc \
-      'set version := "'$XML_VER'"' $@
+      'set version := "'$XML_VER'"' clean $@
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs \
@@ -132,7 +132,7 @@ buildModules() {
       "set pgpPassphrase := Some(Array.empty)" \
       'set version := "'$PARSERS_VER'-DOC"' \
       doc \
-      'set version := "'$PARSERS_VER'"' $@
+      'set version := "'$PARSERS_VER'"' clean $@
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
@@ -140,31 +140,31 @@ buildModules() {
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala scala-continuations $CONTINUATIONS_REF
   $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" clean "plugin/compile:package" $@ # https://github.com/scala/scala-continuations/pull/4
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala actors-migration "$ACTORS_MIGRATION_REF"
   $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" clean $@
 
   # TODO: akka-actor
   # script: akka/project/script/release
@@ -221,7 +221,7 @@ publishModulesPrivate() {
         "set resolvers in ThisBuild += $resolver"\
         "set every publishTo := Some($resolver)"\
         'set credentials in ThisBuild += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
-      clean test publish
+      clean "plugin/compile:package" test publish
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
@@ -304,7 +304,7 @@ echo "Most recent staging repo url: $lastOpenUrl"
 echo "All open: $allOpen"
 
 # publish to sonatype
-buildModules clean test publish-signed
+buildModules test publish-signed
 
 # was hoping we could make everything go to the same staging repo, but it's not timing that causes two staging repos to be opened
 # -- maybe user-agent or something? WHY IS EVERYTHING SO HARD
