@@ -276,6 +276,7 @@ ant -Dstarr.version=$SCALA_VER\
     -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
     -Dscala-swing.version.number=$SWING_VER\
     -Dscalacheck.version.number=$SCALACHECK_VER\
+    -Dactors-migration.version.number=$ACTORS_MIGRATION_VER\
     -Dupdate.versions=1\
     -Dscalac.args.optimise=-optimise\
     $antBuildTask publish-signed
