@@ -108,19 +108,31 @@ update() {
 }
 
 # build/test/publish scala core modules to sonatype
+# test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
 buildModules() {
-  # test and publish to sonatype, assuming you have ~/.sbt/0.13/sonatype.sbt and ~/.sbt/0.13/plugin/gpg.sbt
+  # publish to sonatype
   update scala scala-xml "$XML_REF"
-  $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
+  # oh boy... can't use scaladoc to document scala-xml if scaladoc depends on the same version of scala-xml,
+  # even if that version is available through the project's resolvers, sbt won't look past this project
+  # SOOOOO, we set the version to a dummy (-DOC), generate documentation, then set the version to the right one
+  # and publish (which won't re-gen the docs)
+  # 'set publishArtifact in (Compile, packageDoc) := false' \
+  $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)"\
+      'set version := "'$XML_VER'-DOC"' \
+      doc \
+      'set version := "'$XML_VER'"' $@
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
+  $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
-      "set pgpPassphrase := Some(Array.empty)" $@
+      "set pgpPassphrase := Some(Array.empty)" \
+      'set version := "'$PARSERS_VER'-DOC"' \
+      doc \
+      'set version := "'$PARSERS_VER'"' $@
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
