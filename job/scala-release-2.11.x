@@ -163,6 +163,7 @@ buildModules() {
   update scala actors-migration "$ACTORS_MIGRATION_REF"
   $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
+      'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' \
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
       "set pgpPassphrase := Some(Array.empty)" clean $@
 
