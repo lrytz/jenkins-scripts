@@ -1,0 +1,17 @@
+# no bang here, because we want to run both under cygwin and real unix
+# sbtDistTarget must be supplied
+# sbtDistVersionOverride may be -Dproject.version=....  to override the version of the dist to build (only for testing, you should use tags for real releases!)
+# sbtLauncher is a global jenkins configuration variable
+repositoriesFile="$WORKSPACE/jenkins-scripts/repositories-scala-release"
+
+echo "Using repo config:"
+cat "$repositoriesFile"
+
+rm -rf $WORKSPACE/.ivy2
+
+# want full control over sbt, so invoke the launcher directly
+java -Dsbt.log.noformat=true -Dsbt.ivy.home=$WORKSPACE/.ivy2 \
+  -Dsbt.override.build.repos=true -Dsbt.repository.config="$repositoriesFile" \
+  -jar $sbtLauncher \
+  $sbtDistVersionOverride \
+  clean update $sbtDistTarget
