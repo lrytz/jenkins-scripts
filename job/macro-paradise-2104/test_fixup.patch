@@ -1,0 +1,314 @@
+From 1665c26a640d211ae2f08ce653f860fb7292962a Mon Sep 17 00:00:00 2001
+From: Eugene Burmako <xeno.by@gmail.com>
+Date: Tue, 31 Dec 2013 15:27:30 +0300
+Subject: [PATCH] tests that currently fail for macro paradise
+
+---
+ test/files/neg/divergent-implicit.check       | 10 ++++---
+ test/files/neg/t5578.check                    |  5 +++-
+ test/files/neg/t5845.check                    |  7 -----
+ test/files/neg/t5845.scala                    | 16 ----------
+ test/files/neg/t7519-b.check                  |  4 ++-
+ test/files/neg/t7519.check                    |  8 +++--
+ test/files/neg/t800.check                     |  3 +-
+ test/files/neg/t8104b/Macros_1.scala          | 23 ---------------
+ test/files/neg/t8104b/Test_2.scala            | 24 ---------------
+ test/files/pos/t5845.scala                    | 16 ++++++++++
+ test/files/pos/z1730.scala                    | 13 ---------
+ test/files/run/t5923a/Macros_1.scala          | 42 +++++++++++++++++++++++++--
+ test/files/scalap/typeAnnotations/result.test |  2 +-
+ 13 files changed, 77 insertions(+), 96 deletions(-)
+ delete mode 100644 test/files/neg/t5845.check
+ delete mode 100644 test/files/neg/t5845.scala
+ delete mode 100644 test/files/neg/t8104b/Macros_1.scala
+ delete mode 100644 test/files/neg/t8104b/Test_2.scala
+ create mode 100644 test/files/pos/t5845.scala
+ delete mode 100644 test/files/pos/z1730.scala
+
+diff --git a/test/files/neg/divergent-implicit.check b/test/files/neg/divergent-implicit.check
+index 5f20df1b91..759823d6a9 100644
+--- a/test/files/neg/divergent-implicit.check
++++ b/test/files/neg/divergent-implicit.check
+@@ -7,12 +7,14 @@ divergent-implicit.scala:5: error: diverging implicit expansion for type Int =>
+ starting with method cast in object Test1
+   val x2: String = cast[Int, String](1)
+                                     ^
+-divergent-implicit.scala:14: error: diverging implicit expansion for type Test2.Baz => Test2.Bar
+-starting with method baz2bar in object Test2
++divergent-implicit.scala:14: error: type mismatch;
++ found   : Test2.Foo
++ required: Test2.Bar
+   val x: Bar = new Foo
+                ^
+-divergent-implicit.scala:15: error: diverging implicit expansion for type Test2.Foo => Test2.Bar
+-starting with method foo2bar in object Test2
++divergent-implicit.scala:15: error: type mismatch;
++ found   : Test2.Baz
++ required: Test2.Bar
+   val y: Bar = new Baz
+                ^
+ four errors found
+diff --git a/test/files/neg/t5578.check b/test/files/neg/t5578.check
+index d803adb223..56123d2e0f 100644
+--- a/test/files/neg/t5578.check
++++ b/test/files/neg/t5578.check
+@@ -1,4 +1,7 @@
+-t5578.scala:33: error: No Manifest available for T.
++t5578.scala:33: error: type mismatch;
++ found   : NumericOpsExp.this.Plus[T]
++ required: NumericOpsExp.this.Rep[T]
++    (which expands to)  NumericOpsExp.this.Exp[T]
+   def plus[T: Numeric](x: Rep[T], y: Rep[T]): Rep[T] = Plus[T](x,y)
+                                                               ^
+ one error found
+diff --git a/test/files/neg/t5845.check b/test/files/neg/t5845.check
+deleted file mode 100644
+index 8c6100d6de..0000000000
+--- a/test/files/neg/t5845.check
++++ /dev/null
+@@ -1,7 +0,0 @@
+-t5845.scala:9: error: value +++ is not a member of Int
+-  println(5 +++ 5)
+-            ^
+-t5845.scala:15: error: value +++ is not a member of Int
+-  println(5 +++ 5)
+-            ^
+-two errors found
+diff --git a/test/files/neg/t5845.scala b/test/files/neg/t5845.scala
+deleted file mode 100644
+index 823c722c14..0000000000
+--- a/test/files/neg/t5845.scala
++++ /dev/null
+@@ -1,16 +0,0 @@
+-class Num[T] {
+-  def mkOps = new Ops
+-  class Ops { def +++(rhs: T) = () }
+-}
+-
+-class A {
+-  implicit def infixOps[T, CC[X] <: Num[X]](lhs: T)(implicit num: CC[T]) = num.mkOps
+-  implicit val n1 = new Num[Int] { }
+-  println(5 +++ 5)
+-}
+-
+-class B {
+-  implicit def infixOps[T, CC[X] <: Num[X]](lhs: T)(implicit num: CC[T]) : CC[T]#Ops = num.mkOps
+-  implicit val n1 = new Num[Int] {}
+-  println(5 +++ 5)
+-}
+diff --git a/test/files/neg/t7519-b.check b/test/files/neg/t7519-b.check
+index ad554b8633..08d819eeec 100644
+--- a/test/files/neg/t7519-b.check
++++ b/test/files/neg/t7519-b.check
+@@ -1,4 +1,6 @@
+-Use_2.scala:6: error: No implicit view available from String => K.
++Use_2.scala:6: error: type mismatch;
++ found   : String
++ required: Q
+   val x: Q = ex.Mac.mac("asdf")
+                        ^
+ one error found
+diff --git a/test/files/neg/t7519.check b/test/files/neg/t7519.check
+index 164d67f595..df54abaa3e 100644
+--- a/test/files/neg/t7519.check
++++ b/test/files/neg/t7519.check
+@@ -1,7 +1,11 @@
+-t7519.scala:5: error: could not find implicit value for parameter nada: Nothing
++t7519.scala:5: error: type mismatch;
++ found   : Int(0)
++ required: String
+     locally(0 : String) // was: "value conversion is not a member of C.this.C"
+             ^
+-t7519.scala:15: error: could not find implicit value for parameter nada: Nothing
++t7519.scala:15: error: type mismatch;
++ found   : Int(0)
++ required: String
+       locally(0 : String) // was: "value conversion is not a member of U"
+               ^
+ two errors found
+diff --git a/test/files/neg/t800.check b/test/files/neg/t800.check
+index 8ba95fddde..37a0c6f324 100644
+--- a/test/files/neg/t800.check
++++ b/test/files/neg/t800.check
+@@ -5,8 +5,7 @@ t800.scala:8: error: method qualification is defined twice
+   conflicting symbols both originated in file 't800.scala'
+   val qualification = false;
+       ^
+-t800.scala:12: error: value qualification is defined twice
+-  conflicting symbols both originated in file 't800.scala'
++t800.scala:12: error: qualification is already defined as value qualification
+   var qualification = false;
+       ^
+ t800.scala:16: error: method qualification is defined twice
+diff --git a/test/files/neg/t8104b/Macros_1.scala b/test/files/neg/t8104b/Macros_1.scala
+deleted file mode 100644
+index 688d0694c0..0000000000
+--- a/test/files/neg/t8104b/Macros_1.scala
++++ /dev/null
+@@ -1,23 +0,0 @@
+-import scala.reflect.macros.Context
+-
+-object Macros {
+-  def impl[T](c: Context)(implicit T: c.WeakTypeTag[T]) = {
+-    import c.universe._
+-    import Flag._
+-    import definitions._
+-    val fields = T.tpe.declarations.toList.collect{ case x: TermSymbol if x.isVal && x.isCaseAccessor => x }
+-    val Repr = appliedType(TupleClass(fields.length).asType.toType, fields.map(_.typeSignature))
+-    c.Expr(Block(
+-      List(ClassDef(
+-        Modifiers(FINAL),
+-        newTypeName("$anon"),
+-        List(),
+-        Template(
+-          List(AppliedTypeTree(Ident(newTypeName("Generic")), List(TypeTree(T.tpe)))),
+-          emptyValDef,
+-          List(
+-            DefDef(Modifiers(), nme.CONSTRUCTOR, List(), List(List()), TypeTree(), Block(List(Apply(Select(Super(This(tpnme.EMPTY), tpnme.EMPTY), nme.CONSTRUCTOR), List())), Literal(Constant(())))),
+-            TypeDef(Modifiers(), newTypeName("Repr"), List(), TypeTree(Repr)))))),
+-      Apply(Select(New(Ident(newTypeName("$anon"))), nme.CONSTRUCTOR), List())))
+-  }
+-}
+\ No newline at end of file
+diff --git a/test/files/neg/t8104b/Test_2.scala b/test/files/neg/t8104b/Test_2.scala
+deleted file mode 100644
+index a0d35942ba..0000000000
+--- a/test/files/neg/t8104b/Test_2.scala
++++ /dev/null
+@@ -1,24 +0,0 @@
+-trait Generic[T] { type Repr }
+-object Generic {
+-  type Aux[T, Repr0] = Generic[T] { type Repr = Repr0 }
+-  import scala.language.experimental.macros
+-  implicit def materializeGeneric[T, Repr]: Generic.Aux[T, Repr] = macro Macros.impl[T]
+-}
+-
+-object Test extends App {
+-  case class C(x: Int, y: Int)
+-
+-  // this doesn't work because of SI-7470
+-  // well, in fact SI-7470 has been fixed: https://github.com/scala/scala/pull/2499
+-  // it's just that the fix hasn't been backported to 2.10.x
+-  // if you've made this compile, consider taking a look at the aforementioned pull request
+-  def reprify[T, Repr](x: T)(implicit generic: Generic.Aux[T, Repr]) = ???
+-  reprify(C(40, 2))
+-
+-  // this is a compilation error at the moment as explained in SI-8104
+-  // because matchesPt in implicit search says that depoly(<type of materializeGeneric>) isn't a subtype of Generic.Aux[C, (Int, Int)]
+-  // which is rightfully so, because depoly only replaces type parameters, not type members with wildcard types
+-  // however in the future we might want to relax the matchesPt check, so this might start compiling
+-  // therefore, if you've broken this test, then you should be happy, because most likely you've just enabled an interesting use case!
+-  implicitly[Generic.Aux[C, (Int, Int)]]
+-}
+diff --git a/test/files/pos/t5845.scala b/test/files/pos/t5845.scala
+new file mode 100644
+index 0000000000..823c722c14
+--- /dev/null
++++ b/test/files/pos/t5845.scala
+@@ -0,0 +1,16 @@
++class Num[T] {
++  def mkOps = new Ops
++  class Ops { def +++(rhs: T) = () }
++}
++
++class A {
++  implicit def infixOps[T, CC[X] <: Num[X]](lhs: T)(implicit num: CC[T]) = num.mkOps
++  implicit val n1 = new Num[Int] { }
++  println(5 +++ 5)
++}
++
++class B {
++  implicit def infixOps[T, CC[X] <: Num[X]](lhs: T)(implicit num: CC[T]) : CC[T]#Ops = num.mkOps
++  implicit val n1 = new Num[Int] {}
++  println(5 +++ 5)
++}
+diff --git a/test/files/pos/z1730.scala b/test/files/pos/z1730.scala
+deleted file mode 100644
+index 0c5875a818..0000000000
+--- a/test/files/pos/z1730.scala
++++ /dev/null
+@@ -1,13 +0,0 @@
+-// /scala/trac/z1730/a.scala
+-// Wed May 23 07:41:25 PDT 2012
+-
+-class X[R] {
+-  def xx(value: => R, addTweak: Boolean = true) = 0
+-}
+-
+-class Boo {
+-  implicit def toX[R](v: R) : X[R] = null
+-  def goo2 {
+-    3.xx(34)
+-  }
+-}
+diff --git a/test/files/run/t5923a/Macros_1.scala b/test/files/run/t5923a/Macros_1.scala
+index 6d21362c4d..97076eb102 100644
+--- a/test/files/run/t5923a/Macros_1.scala
++++ b/test/files/run/t5923a/Macros_1.scala
+@@ -7,8 +7,46 @@ object C {
+ }
+ 
+ object Macros {
+-  def impl[T: c.WeakTypeTag](c: Context) = {
++  def impl[T](c: Context)(ttag: c.WeakTypeTag[T]) = {
+     import c.universe._
+-    reify(C[T](c.literal(weakTypeOf[T].toString).splice))
++    val ttag0 = ttag;
++    {
++      // When we're expanding implicitly[C[Nothing]], the type inferencer will see
++      // that foo[T] returns C[T] and that we request an implicit of type C[Nothing].
++      //
++      // Then the type inferencer will try to match C[T] against C[Nothing] and infer everything it can infer
++      // from that match, but not more (e.g. if we were returning Iso[T, U] and the type we were looking at was Iso[Foo, L],
++      // we wouldn't want U to be auto-inferred to Nothing, as it usually happens with normal methods,
++      // but would rather want it to remain unknown, so that our macro could take a stab at inferring it:
++      // see the comments in this commit for more information).
++      //
++      // Equipped with common sense, in our case of C[T] and C[Nothing] we would expect T to be inferred as Nothing, and then we
++      // would expect T in the corresponding macro invocation to be Nothing. Unfortunately it is not that simple.
++      //
++      // Internally the type inferencer uses Nothing as a dummy value, which stands for "don't know how to
++      // infer this type parameter". In the Iso example, matching Iso[T, U] against Iso[Foo, L] would result in
++      // T being inferred as Foo and U being inferred as Nothing (!!). Then the type inferencer will think:
++      // "Aha! U ended up being Nothing. This means that I failed to infer it,
++      // therefore the result of my work is: T -> Foo, U -> still unknown".
++      //
++      // That's all very good and works very well until Nothing is a genuine result of type inference,
++      // as in our original example of inferring T in C[T] from C[Nothing]. In that case, the inferencer becomes confused
++      // and here in the macro implementation we get weakTypeOf[T] equal to some dummy type carrying a type parameter
++      // instead of Nothing.
++      //
++      // This eccentric behavior of the type inferencer is a long-standing problem in scalac,
++      // so the best one can do for now until it's fixed is to work around, manually converting
++      // suspicious T's into Nothings. Of course, this means that we would have to approximate,
++      // because there's no way to know whether having T here stands for a failed attempt to infer Nothing
++      // or for a failed attempt to infer anything, but at least we're in full control of making the best
++      // of this sad situation.
++      implicit def ttag: WeakTypeTag[T] = {
++        val tpe = ttag0.tpe
++        val sym = tpe.typeSymbol.asType
++        if (sym.isParameter && !sym.isSkolem) TypeTag.Nothing.asInstanceOf[TypeTag[T]]
++        else ttag0
++      }
++      reify(C[T](c.literal(weakTypeOf[T].toString).splice))
++    }
+   }
+ }
+\ No newline at end of file
+diff --git a/test/files/scalap/typeAnnotations/result.test b/test/files/scalap/typeAnnotations/result.test
+index 407b0235c6..69129d6d26 100644
+--- a/test/files/scalap/typeAnnotations/result.test
++++ b/test/files/scalap/typeAnnotations/result.test
+@@ -1,8 +1,8 @@
+ abstract class TypeAnnotations[@scala.specialized R] extends scala.AnyRef {
+   def this() = { /* compiled code */ }
+   @scala.specialized
+-  val x : scala.Int = { /* compiled code */ }
+   @scala.specialized
+   type T
+   def compose[@scala.specialized A](x : A, y : R) : A = { /* compiled code */ }
++  val x : scala.Int = { /* compiled code */ }
+ }
+-- 
+1.8.5.2
+
