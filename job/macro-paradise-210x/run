@@ -39,4 +39,4 @@ SCALAC_OPTS="-Xplugin:$plugin" ./partest --all
 
 # STEP 4: PUBLISH TO SONATYPE
 cd "$script_dir/paradise"
-runSbt "project paradise" publish
+runSbt "project paradise" publish "project quasiquotes" publish
