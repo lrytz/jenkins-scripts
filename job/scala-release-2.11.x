@@ -24,6 +24,7 @@
 # TODO: run this on a nightly basis, derive version number from tag
 # (untagged: -SNAPSHOT, publish to sonatype snapshots,
 #  tagged: $TAG, publish to sonatype staging and close repo -- let the humans release)
+# TODO: introduce SCALA_BINARY_VER and use it in -Dscala.binary.version=$SCALA_BINARY_VER
 
 # defaults for jenkins params
       SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
