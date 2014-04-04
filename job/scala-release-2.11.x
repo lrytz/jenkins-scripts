@@ -270,6 +270,7 @@ ant -Dstarr.version=$SCALA_VER\
     -Dextra.repo.url=$stagingRepo\
     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
     -Dscala.binary.version=$SCALA_VER\
+    -Dscala.full.version=$SCALA_FULL_VER\
     -Dpartest.version.number=$PARTEST_VER\
     -Dscala-xml.version.number=$XML_VER\
     -Dscala-parser-combinators.version.number=$PARSERS_VER\
