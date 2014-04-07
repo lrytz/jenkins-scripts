@@ -288,9 +288,10 @@ ant -Dstarr.version=$SCALA_VER\
 # TODO: create PR with following commit (note that release will have been tagged already)
 # git commit versions.properties -m"Bump versions.properties for $SCALA_VER."
 
-
+# TODO: remove -Dscala.full.version line as soon as https://github.com/scala/scala/pull/3675 is merged
 # overwrite "locker" version of scala at private-repo with bootstrapped version
 ant -Dmaven.version.number=$SCALA_VER\
+    -Dscala.full.version=$SCALA_FULL_VER\
     -Dremote.snapshot.repository=NOPE\
     -Drepository.credentials.id=$stagingCred\
     -Dremote.release.repository=$stagingRepo\
