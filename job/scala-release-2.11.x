@@ -27,8 +27,8 @@
 # TODO: introduce SCALA_BINARY_VER and use it in -Dscala.binary.version=$SCALA_BINARY_VER
 
 # defaults for jenkins params
+# but, no default for SCALA_VER_SUFFIX, "" is a valid value for the final release.
       SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
-    SCALA_VER_SUFFIX=${SCALA_VER_SUFFIX-"-RC1"}
              XML_VER=${XML_VER-"1.0.0"}
          PARSERS_VER=${PARSERS_VER-"1.0.0"}
    CONTINUATIONS_VER=${CONTINUATIONS_VER-"1.0.0"}
