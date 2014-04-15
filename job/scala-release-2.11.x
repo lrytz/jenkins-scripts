@@ -195,7 +195,7 @@ publishModulesPrivate() {
   update rickynils scalacheck $SCALACHECK_REF
   $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      'set every scalaBinaryVersion := "'$SCALA_VER'"' \
+      'set every scalaBinaryVersion := "'$SCALA_BINARY_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
