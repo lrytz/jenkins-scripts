@@ -9,21 +9,21 @@ runSbt () {
 }
 git clean -dfx
 if [[ -d paradise ]]; then rm -rf paradise; fi
-git clone git@github.com:scalamacros/paradise.git -b 2.11.0-RC3 paradise
+git clone git@github.com:scalamacros/paradise.git -b 2.11.0 paradise
 if [[ -d scala ]]; then rm -rf scala; fi
 git clone git@github.com:scala/scala.git -b master scala
 
 # STEP 2: RUN THE TESTS
 cd "$script_dir/paradise"
 runSbt "project tests" test
-plugin=( $(pwd)/plugin/target/scala-2.11.0-RC3/paradise_*.jar )
+plugin=( $(pwd)/plugin/target/scala-2.11.0/paradise_*.jar )
 [[ ! -f "$plugin" ]] && exit 1
 
 # STEP 3: SELECT SCALAC BRANCH AND APPLY OUR PATCHES
 # TODO: make all the tests pass
 # current failures are quite minor, but it's still annoying
 cd "$script_dir/scala"
-git checkout v2.11.0-RC3
+git checkout v2.11.0
 git apply "$script_dir/test_fixup.patch"
 
 # STEP 4: BOOTSTRAP SCALAC USING THE PARADISE PLUGIN
