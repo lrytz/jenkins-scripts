@@ -270,7 +270,7 @@ git clean -fxd
 ant -Dstarr.version=$SCALA_VER\
     -Dextra.repo.url=$stagingRepo\
     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
-    -Dscala.binary.version=$SCALA_VER\
+    -Dscala.binary.version=$SCALA_BINARY_VER\
     -Dscala.full.version=$SCALA_FULL_VER\
     -Dpartest.version.number=$PARTEST_VER\
     -Dscala-xml.version.number=$XML_VER\
@@ -292,6 +292,7 @@ ant -Dstarr.version=$SCALA_VER\
 # overwrite "locker" version of scala at private-repo with bootstrapped version
 ant -Dmaven.version.number=$SCALA_VER\
     -Dscala.full.version=$SCALA_FULL_VER\
+    -Dscala.binary.version=$SCALA_BINARY_VER\
     -Dremote.snapshot.repository=NOPE\
     -Drepository.credentials.id=$stagingCred\
     -Dremote.release.repository=$stagingRepo\
