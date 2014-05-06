@@ -1,13 +1,18 @@
 #!/bin/bash -ex
 # PRE:
 #  - vars: sha
-#  - artifacts: versions.properties (parsed for maven_version_number)
+#  - artifacts: versions.properties (parsed for maven_version_number, version_minor)
 #  - on pr maven repo: Scala version $maven_version_number
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 . $scriptsDir/common
 . $scriptsDir/pr-scala-common
 parse_properties versions.properties
+
+if [ "$version_minor" = "12" ]
+    then echo "Not integrating with Scala 2.$version_minor."; exit 0
+    else echo "Integrating with Scala 2.$version_minor"
+fi
 
 BASEDIR=`pwd`
 UBERBUILD_URL="https://github.com/scala-ide/uber-build.git"
