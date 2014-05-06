@@ -47,7 +47,7 @@ case $prDryRun in
         cd dists/maven/latest
         ant $antDeployArgs deploy-core.snapshot
       ;;
-      11)
+      11|12)
         echo ">>> Getting Scala version number."
         ant -q $antDeployArgs init
         parse_properties scala/buildcharacter.properties
