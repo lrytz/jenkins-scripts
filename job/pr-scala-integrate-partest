@@ -37,8 +37,8 @@ getOrUpdate $PARTESTDIR $PARTESTURL master # TODO: go back to "v${partest_versio
 # Set versions
 #####################################################
 
-if [ "$version_minor" = "11" ]
-    then echo "Integrating with Scala 2.11."
+if [ "$version_minor" != "10" ]
+    then echo "Integrating with Scala 2.11+"
     else echo "Not integrating with older Scala."; exit 0
 fi
 
