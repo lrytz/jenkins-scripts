@@ -179,11 +179,14 @@ buildModules() {
 # test and publish modules necessary to bootstrap Scala to $stagingRepo
 publishModulesPrivate() {
   update scala scala-xml "$XML_REF"
-  $sbtCmd $sbtArgs 'set version := "'$XML_VER'"' \
+  # see above regarding the -DOC version hack
+  $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
-      clean publish #test --  can't test against half-bootstrapped scala due to binary incompatibility, will test once bootstrapped
+      'set version := "'$XML_VER'-DOC"' \
+      clean doc \
+      'set version := "'$XML_VER'"' publish
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
