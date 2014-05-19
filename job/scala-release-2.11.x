@@ -189,11 +189,13 @@ publishModulesPrivate() {
       'set version := "'$XML_VER'"' publish
 
   update scala scala-parser-combinators "$PARSERS_REF"
-  $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
+  $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test publish
+      'set version := "'$PARSERS_VER'-DOC"' \
+      clean doc \
+      'set version := "'$PARSERS_VER'"' test publish
 
   update rickynils scalacheck $SCALACHECK_REF
   $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
