@@ -48,34 +48,42 @@ fi
 updatedVersions=()
 if [ -z "$ACTORS_MIGRATION_VER" ]
   then ACTORS_MIGRATION_REF=${ACTORS_MIGRATION_REF-"HEAD"}
+       ACTORS_MIGRATION_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dactors-migration.version.number=$ACTORS_MIGRATION_VER")
 fi
 if [ -z "$CONTINUATIONS_VER" ]
   then CONTINUATIONS_REF=${CONTINUATIONS_REF-"HEAD"}
+       CONTINUATIONS_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-library.version.number=$CONTINUATIONS_VER")
        updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-plugin.cross=_${SCALA_FULL_VER}")
        updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER")
 fi
 if [ -z "$PARSERS_VER" ]
   then PARSERS_REF=${PARSERS_REF-"HEAD"}
+       PARSERS_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dscala-parser-combinators.version.number=$PARSERS_VER")
 fi
 if [ -z "$PARTEST_IFACE_VER" ]
   then PARTEST_IFACE_REF=${PARTEST_IFACE_REF-"HEAD"}
+       PARTEST_IFACE_VER="1.0.0-local-SNAPSHOT"
 fi
 if [ -z "$PARTEST_VER" ]
   then PARTEST_REF=${PARTEST_REF-"HEAD"}
+       PARTEST_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dpartest.version.number=$PARTEST_VER")
 fi
 if [ -z "$SCALACHECK_VER" ]
   then SCALACHECK_REF=${SCALACHECK_REF-"HEAD"}
+       SCALACHECK_VER="1.0.0-local-SNAPSHOT"
 fi
 if [ -z "$SWING_VER" ]
   then SWING_REF=${SWING_REF-"HEAD"}
+       SWING_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dscala-swing.version.number=$SWING_VER")
 fi
 if [ -z "$XML_VER" ]
   then XML_REF=${XML_REF-"HEAD"}
+       XML_VER="1.0.0-local-SNAPSHOT"
 else   updatedVersions=("${updatedVersions[@]}" "-Dscala-xml.version.number=$XML_VER")
 fi
 
@@ -158,7 +166,7 @@ buildModules() {
   # SOOOOO, we set the version to a dummy (-DOC), generate documentation, then set the version to the right one
   # and publish (which won't re-gen the docs)
   # also tried publish-local without docs using 'set publishArtifact in (Compile, packageDoc) := false' and republishing, no dice
-  if [ -z "$XML_VER" ]
+  if [ "$XML_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-xml; no version specified."
     else
@@ -172,7 +180,7 @@ buildModules() {
           'set version := "'$XML_VER'"' $@
   fi
 
-  if [ -z "$PARSERS_VER" ]
+  if [ "$PARSERS_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-parser-combinators; no version specified."
     else
@@ -186,7 +194,7 @@ buildModules() {
           'set version := "'$PARSERS_VER'"' $@
   fi
 
-  if [ -z "$PARTEST_VER" ]
+  if [ "$PARTEST_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-partest; no version specified."
     else
@@ -199,7 +207,7 @@ buildModules() {
           "set pgpPassphrase := Some(Array.empty)" clean $@
   fi
 
-  if [ -z "$PARTEST_IFACE_VER" ]
+  if [ "$PARTEST_IFACE_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-partest-interface; no version specified."
     else
@@ -210,7 +218,7 @@ buildModules() {
           "set pgpPassphrase := Some(Array.empty)" clean $@
   fi
 
-  if [ -z "$CONTINUATIONS_VER" ]
+  if [ "$CONTINUATIONS_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-continuations; no version specified."
     else
@@ -221,7 +229,7 @@ buildModules() {
           "set pgpPassphrase := Some(Array.empty)" clean "plugin/compile:package" $@ # https://github.com/scala/scala-continuations/pull/4
   fi
 
-  if [ -z "$SWING_VER" ]
+  if [ "$SWING_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping scala-swing; no version specified."
     else
@@ -232,7 +240,7 @@ buildModules() {
           "set pgpPassphrase := Some(Array.empty)" clean $@
   fi
 
-  if [ -z "$ACTORS_MIGRATION_VER" ]
+  if [ "$ACTORS_MIGRATION_VER" == "1.0.0-local-SNAPSHOT" ]
     then
       echo "Skipping actors-migration; no version specified."
     else
