@@ -270,7 +270,7 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       'set version := "'$XML_VER'-DOC"' \
       clean doc \
-      'set version := "'$XML_VER'"' test $1
+      'set version := "'$XML_VER'"' test publish
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs \
@@ -279,7 +279,29 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       'set version := "'$PARSERS_VER'-DOC"' \
       clean doc \
-      'set version := "'$PARSERS_VER'"' test $1
+      'set version := "'$PARSERS_VER'"' test publish
+
+  update scala scala-continuations $CONTINUATIONS_REF
+  $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
+      'set every scalaVersion := "'$SCALA_VER'"' \
+        "set resolvers in ThisBuild += $resolver"\
+        "set every publishTo := Some($resolver)"\
+        'set credentials in ThisBuild += Credentials(Path.userHome / ".credentials-private-repo")'\
+      clean "plugin/compile:package" test publish
+
+  update scala scala-swing "$SWING_REF"
+  $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
+      clean test publish
+
+  update scala scala-partest-interface "$PARTEST_IFACE_REF"
+  $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
+      'set scalaVersion := "'$SCALA_VER'"' \
+      "set publishTo := Some($resolver)"\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
+      clean test publish
 
   update rickynils scalacheck $SCALACHECK_REF
   $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
@@ -288,7 +310,7 @@ publishModulesPrivate() {
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean $1 # test times out
+      clean publish # test times out
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
@@ -297,29 +319,7 @@ publishModulesPrivate() {
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test $1
-
-  update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test $1
-
-  update scala scala-continuations $CONTINUATIONS_REF
-  $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
-      'set every scalaVersion := "'$SCALA_VER'"' \
-        "set resolvers in ThisBuild += $resolver"\
-        "set every publishTo := Some($resolver)"\
-        'set credentials in ThisBuild += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean "plugin/compile:package" test $1
-
-  update scala scala-swing "$SWING_REF"
-  $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test $1
+      clean test publish
 
 }
 
@@ -343,7 +343,9 @@ ant -Dmaven.version.number=$SCALA_VER\
 # build, test and publish modules with this core
 # publish to our internal repo (so we can resolve the modules in the scala build below)
 # we only need to build the modules necessary to build Scala itself
-publishModulesPrivate #publish <-- only needed to bootstrap 2.11.0 release
+# only needed to bootstrap 2.11.0 release, but just to double check...
+# will publish 1.0.0-local-SNAPSHOT versions to the private repo (there is no local repo, so can't do publish-local)
+publishModulesPrivate
 
 
 # # TODO: close all open staging repos so that we can be reaonably sure the only open one we see after publishing below is ours
