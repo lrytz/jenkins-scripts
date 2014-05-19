@@ -5,7 +5,7 @@ script_dir="$( cd "$( dirname "$0" )" && pwd )"
 scriptsDir="$( cd "$( dirname "$0" )/../.." && pwd )"
 . $scriptsDir/common
 runSbt () {
-  sbt -Dmaven.settings.file="$maven_settings_file" -no-colors -no-share "$@"
+  sbt -Dmaven.settings.file="$maven_settings_file" -Dscala.version="2.10.4" -no-colors -no-share "$@"
 }
 git clean -dfx
 if [[ -d pickling ]]; then rm -rf pickling; fi
