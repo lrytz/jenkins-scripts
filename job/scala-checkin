@@ -5,7 +5,12 @@ artifactsDir=$2
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-antArgs="-Darchives.skipxz=true" $scriptsDir/build
+# allows passing compiler flags in scala-checkin-manual
+if [[ "$scalacArgs" != "" ]] ; then
+  antArgsCompiler="-Dscalac.args=\"$scalacArgs\" -Dpartest.scalac_opts=\"$scalacArgs\""
+fi
+
+antArgs="-Darchives.skipxz=true $antArgsCompiler" $scriptsDir/build
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then
