@@ -28,17 +28,58 @@
 
 # defaults for jenkins params
 # but, no default for SCALA_VER_SUFFIX, "" is a valid value for the final release.
-      SCALA_VER_BASE=${SCALA_VER_BASE-"2.11.0"}
-             XML_VER=${XML_VER-"1.0.0"}
-         PARSERS_VER=${PARSERS_VER-"1.0.0"}
-   CONTINUATIONS_VER=${CONTINUATIONS_VER-"1.0.0"}
-           SWING_VER=${SWING_VER-"1.0.0"}
-ACTORS_MIGRATION_VER=${ACTORS_MIGRATION_VER-"1.0.0"}
-         PARTEST_VER=${PARTEST_VER-"1.0.0"}
-   PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.4.0"}
-      SCALACHECK_VER=${SCALACHECK_VER-"1.11.3"}
+if [ -z "$SCALA_VER_BASE" ]
+  then echo "You must specify SCALA_VER_BASE."; exit 1
+fi
 
+#              XML_VER=${XML_VER-"1.0.0"}
+#          PARSERS_VER=${PARSERS_VER-"1.0.0"}
+#    CONTINUATIONS_VER=${CONTINUATIONS_VER-"1.0.0"}
+#            SWING_VER=${SWING_VER-"1.0.0"}
+# ACTORS_MIGRATION_VER=${ACTORS_MIGRATION_VER-"1.0.0"}
+#          PARTEST_VER=${PARTEST_VER-"1.0.0"}
+#    PARTEST_IFACE_VER=${PARTEST_IFACE_VER-"0.4.0"}
+#       SCALACHECK_VER=${SCALACHECK_VER-"1.11.3"}
+#
            SCALA_REF=${SCALA_REF-"2.11.x"}
+
+# if a version is empty/null, we won't build and publish the module to sonatype,
+# but we'll still test (by default) its HEAD revision internally
+updatedVersions=()
+if [ -z "$ACTORS_MIGRATION_VER" ]
+  then ACTORS_MIGRATION_REF=${ACTORS_MIGRATION_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dactors-migration.version.number=$ACTORS_MIGRATION_VER")
+fi
+if [ -z "$CONTINUATIONS_VER" ]
+  then CONTINUATIONS_REF=${CONTINUATIONS_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-library.version.number=$CONTINUATIONS_VER")
+       updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-plugin.cross=_${SCALA_FULL_VER}")
+       updatedVersions=("${updatedVersions[@]}" "-Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER")
+fi
+if [ -z "$PARSERS_VER" ]
+  then PARSERS_REF=${PARSERS_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dscala-parser-combinators.version.number=$PARSERS_VER")
+fi
+if [ -z "$PARTEST_IFACE_VER" ]
+  then PARTEST_IFACE_REF=${PARTEST_IFACE_REF-"HEAD"}
+fi
+if [ -z "$PARTEST_VER" ]
+  then PARTEST_REF=${PARTEST_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dpartest.version.number=$PARTEST_VER")
+fi
+if [ -z "$SCALACHECK_VER" ]
+  then SCALACHECK_REF=${SCALACHECK_REF-"HEAD"}
+fi
+if [ -z "$SWING_VER" ]
+  then SWING_REF=${SWING_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dscala-swing.version.number=$SWING_VER")
+fi
+if [ -z "$XML_VER" ]
+  then XML_REF=${XML_REF-"HEAD"}
+else   updatedVersions=("${updatedVersions[@]}" "-Dscala-xml.version.number=$XML_VER")
+fi
+
+
              XML_REF=${XML_REF-"v$XML_VER"}
          PARSERS_REF=${PARSERS_REF-"v$PARSERS_VER"}
    CONTINUATIONS_REF=${CONTINUATIONS_REF-"v$CONTINUATIONS_VER"}
@@ -117,56 +158,91 @@ buildModules() {
   # SOOOOO, we set the version to a dummy (-DOC), generate documentation, then set the version to the right one
   # and publish (which won't re-gen the docs)
   # also tried publish-local without docs using 'set publishArtifact in (Compile, packageDoc) := false' and republishing, no dice
-  update scala scala-xml "$XML_REF"
-  $sbtCmd $sbtArgs \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)"\
-      'set version := "'$XML_VER'-DOC"' \
-      clean doc \
-      'set version := "'$XML_VER'"' $@
+  if [ -z "$XML_VER" ]
+    then
+      echo "Skipping scala-xml; no version specified."
+    else
+      update scala scala-xml "$XML_REF"
+      $sbtCmd $sbtArgs \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)"\
+          'set version := "'$XML_VER'-DOC"' \
+          clean doc \
+          'set version := "'$XML_VER'"' $@
+  fi
 
-  update scala scala-parser-combinators "$PARSERS_REF"
-  $sbtCmd $sbtArgs \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" \
-      'set version := "'$PARSERS_VER'-DOC"' \
-      clean doc \
-      'set version := "'$PARSERS_VER'"' $@
+  if [ -z "$PARSERS_VER" ]
+    then
+      echo "Skipping scala-parser-combinators; no version specified."
+    else
+      update scala scala-parser-combinators "$PARSERS_REF"
+      $sbtCmd $sbtArgs \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" \
+          'set version := "'$PARSERS_VER'-DOC"' \
+          clean doc \
+          'set version := "'$PARSERS_VER'"' $@
+  fi
 
-  update scala scala-partest "$PARTEST_REF"
-  $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
-      'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" clean $@
+  if [ -z "$PARTEST_VER" ]
+    then
+      echo "Skipping scala-partest; no version specified."
+    else
+      update scala scala-partest "$PARTEST_REF"
+      $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
+          'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" clean $@
+  fi
 
-  update scala scala-partest-interface "$PARTEST_IFACE_REF"
-  $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" clean $@
+  if [ -z "$PARTEST_IFACE_VER" ]
+    then
+      echo "Skipping scala-partest-interface; no version specified."
+    else
+      update scala scala-partest-interface "$PARTEST_IFACE_REF"
+      $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" clean $@
+  fi
 
-  update scala scala-continuations $CONTINUATIONS_REF
-  $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
-      'set every scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" clean "plugin/compile:package" $@ # https://github.com/scala/scala-continuations/pull/4
+  if [ -z "$CONTINUATIONS_VER" ]
+    then
+      echo "Skipping scala-continuations; no version specified."
+    else
+      update scala scala-continuations $CONTINUATIONS_REF
+      $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
+          'set every scalaVersion := "'$SCALA_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" clean "plugin/compile:package" $@ # https://github.com/scala/scala-continuations/pull/4
+  fi
 
-  update scala scala-swing "$SWING_REF"
-  $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" clean $@
+  if [ -z "$SWING_VER" ]
+    then
+      echo "Skipping scala-swing; no version specified."
+    else
+      update scala scala-swing "$SWING_REF"
+      $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" clean $@
+  fi
 
-  update scala actors-migration "$ACTORS_MIGRATION_REF"
-  $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
-      'set scalaVersion := "'$SCALA_VER'"' \
-      'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
-      "set pgpPassphrase := Some(Array.empty)" clean $@
+  if [ -z "$ACTORS_MIGRATION_VER" ]
+    then
+      echo "Skipping actors-migration; no version specified."
+    else
+      update scala actors-migration "$ACTORS_MIGRATION_REF"
+      $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
+          'set scalaVersion := "'$SCALA_VER'"' \
+          'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' \
+          'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
+          "set pgpPassphrase := Some(Array.empty)" clean $@
+  fi
 
   # TODO: akka-actor
   # script: akka/project/script/release
@@ -186,7 +262,7 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       'set version := "'$XML_VER'-DOC"' \
       clean doc \
-      'set version := "'$XML_VER'"' publish
+      'set version := "'$XML_VER'"' test $1
 
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs \
@@ -195,7 +271,7 @@ publishModulesPrivate() {
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       'set version := "'$PARSERS_VER'-DOC"' \
       clean doc \
-      'set version := "'$PARSERS_VER'"' test publish
+      'set version := "'$PARSERS_VER'"' test $1
 
   update rickynils scalacheck $SCALACHECK_REF
   $sbtCmd $sbtArgs 'set version := "'$SCALACHECK_VER'"' \
@@ -204,7 +280,7 @@ publishModulesPrivate() {
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean publish # test times out
+      clean $1 # test times out
 
   update scala scala-partest "$PARTEST_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_VER'"' \
@@ -213,14 +289,14 @@ publishModulesPrivate() {
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test publish
+      clean test $1
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test publish
+      clean test $1
 
   update scala scala-continuations $CONTINUATIONS_REF
   $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
@@ -228,14 +304,14 @@ publishModulesPrivate() {
         "set resolvers in ThisBuild += $resolver"\
         "set every publishTo := Some($resolver)"\
         'set credentials in ThisBuild += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean "plugin/compile:package" test publish
+      clean "plugin/compile:package" test $1
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
       'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
-      clean test publish
+      clean test $1
 
 }
 
@@ -259,7 +335,7 @@ ant -Dmaven.version.number=$SCALA_VER\
 # build, test and publish modules with this core
 # publish to our internal repo (so we can resolve the modules in the scala build below)
 # we only need to build the modules necessary to build Scala itself
-publishModulesPrivate
+publishModulesPrivate #publish <-- only needed to bootstrap 2.11.0 release
 
 
 # # TODO: close all open staging repos so that we can be reaonably sure the only open one we see after publishing below is ours
@@ -277,15 +353,7 @@ ant -Dstarr.version=$SCALA_VER\
     -Dmaven.version.suffix=$SCALA_VER_SUFFIX\
     -Dscala.binary.version=$SCALA_BINARY_VER\
     -Dscala.full.version=$SCALA_FULL_VER\
-    -Dpartest.version.number=$PARTEST_VER\
-    -Dscala-xml.version.number=$XML_VER\
-    -Dscala-parser-combinators.version.number=$PARSERS_VER\
-    -Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER\
-    -Dscala-continuations-plugin.cross=_${SCALA_FULL_VER}\
-    -Dscala-continuations-library.version.number=$CONTINUATIONS_VER\
-    -Dscala-swing.version.number=$SWING_VER\
-    -Dscalacheck.version.number=$SCALACHECK_VER\
-    -Dactors-migration.version.number=$ACTORS_MIGRATION_VER\
+    ${updatedVersions[@]} \
     -Dupdate.versions=1\
     -Dscalac.args.optimise=-optimise\
     $antBuildTask publish-signed
