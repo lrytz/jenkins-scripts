@@ -120,7 +120,7 @@ buildModules() {
   update scala scala-xml "$XML_REF"
   $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)"\
       'set version := "'$XML_VER'-DOC"' \
       clean doc \
@@ -129,7 +129,7 @@ buildModules() {
   update scala scala-parser-combinators "$PARSERS_REF"
   $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" \
       'set version := "'$PARSERS_VER'-DOC"' \
       clean doc \
@@ -140,32 +140,32 @@ buildModules() {
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala scala-continuations $CONTINUATIONS_REF
   $sbtCmd $sbtArgs 'set every version := "'$CONTINUATIONS_VER'"' \
       'set every scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" clean "plugin/compile:package" $@ # https://github.com/scala/scala-continuations/pull/4
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" clean $@
 
   update scala actors-migration "$ACTORS_MIGRATION_REF"
   $sbtCmd $sbtArgs 'set version := "'$ACTORS_MIGRATION_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' \
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-sonatype")'\
       "set pgpPassphrase := Some(Array.empty)" clean $@
 
   # TODO: akka-actor
@@ -183,7 +183,7 @@ publishModulesPrivate() {
   $sbtCmd $sbtArgs \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       'set version := "'$XML_VER'-DOC"' \
       clean doc \
       'set version := "'$XML_VER'"' publish
@@ -192,7 +192,7 @@ publishModulesPrivate() {
   $sbtCmd $sbtArgs 'set version := "'$PARSERS_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean test publish
 
   update rickynils scalacheck $SCALACHECK_REF
@@ -201,7 +201,7 @@ publishModulesPrivate() {
       'set every scalaBinaryVersion := "'$SCALA_BINARY_VER'"' \
       'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean publish # test times out
 
   update scala scala-partest "$PARTEST_REF"
@@ -210,14 +210,14 @@ publishModulesPrivate() {
       'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' \
       'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean test publish
 
   update scala scala-partest-interface "$PARTEST_IFACE_REF"
   $sbtCmd $sbtArgs 'set version :="'$PARTEST_IFACE_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean test publish
 
   update scala scala-continuations $CONTINUATIONS_REF
@@ -225,14 +225,14 @@ publishModulesPrivate() {
       'set every scalaVersion := "'$SCALA_VER'"' \
         "set resolvers in ThisBuild += $resolver"\
         "set every publishTo := Some($resolver)"\
-        'set credentials in ThisBuild += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+        'set credentials in ThisBuild += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean "plugin/compile:package" test publish
 
   update scala scala-swing "$SWING_REF"
   $sbtCmd $sbtArgs 'set version := "'$SWING_VER'"' \
       'set scalaVersion := "'$SCALA_VER'"' \
       "set publishTo := Some($resolver)"\
-      'set credentials += Credentials(Path.userHome / ".ivy2" / ".credentials-private-repo")'\
+      'set credentials += Credentials(Path.userHome / ".credentials-private-repo")'\
       clean test publish
 
 }
