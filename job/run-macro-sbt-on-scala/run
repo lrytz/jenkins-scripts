@@ -9,8 +9,8 @@ runSbt () {
 verify () {
   echo "verifying $1"
   runSbt "set scalaVersion := \"$1\"" compile
-  runSbt "set scalaVersion := \"$1\"" run 2>&1 | tee out.txt
-  grep "`cat out.check`" out.txt
+  runSbt "set scalaVersion := \"$1\"" run 2>&1 | tee out.check
+  grep "`cat out.check`" out.check
 }
 
 git clean -dfx
@@ -23,6 +23,5 @@ verify 2.10.1
 verify 2.10.2
 verify 2.10.3
 verify 2.10.4
-verify 2.10.5-SNAPSHOT
 verify 2.11.0
-verify 2.11.1-SNAPSHOT
+verify 2.11.1
