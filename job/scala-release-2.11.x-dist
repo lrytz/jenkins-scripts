@@ -15,7 +15,7 @@ cat "$repositoriesFile"
 # if only we had git 1.7.10 or higher: tags="$(git tag --points-at HEAD)"
 tags="$(git show-ref --tags -d | grep $(git rev-parse HEAD) | cut -f3 -d/ | cut -f1 -d^)"
 
-[[ -n $version ]] && if [ "$tags" != "v$version" ]; then
+[[ -z $sbtDistVersionOverride ]] && [[ -n $version ]] && if [ "$tags" != "v$version" ]; then
   echo "Inconsistent tag/version combo detected. Abort-abort."
   exit 255
 fi
