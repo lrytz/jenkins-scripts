@@ -5,7 +5,7 @@ artifactsDir=$2
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-antArgs="-Darchives.skipxz=true" $scriptsDir/build $scalacArgs
+antArgs="-Darchives.skipxz=true $additionalAntArgs" $scriptsDir/build $scalacArgs
 buildState=$?
 $scriptsDir/archive-checkin
 if [[ $publish == "publish" ]] ; then
