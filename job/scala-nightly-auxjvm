@@ -2,4 +2,7 @@
 
 scriptsDir="$( cd "$( dirname "$0" )/.." && pwd )"
 
-antArgs="-Darchives.skipxz=true" $scriptsDir/build
+# Needed on older Ants with JDK8, see https://netbeans.org/bugzilla/show_bug.cgi?id=213403
+(java -version 2>&1 | grep "1\.8\.") && setBuildCompiler=-Dbuild.compiler=javac1.7
+
+antArgs="-Darchives.skipxz=true $setBuildCompiler" $scriptsDir/build
