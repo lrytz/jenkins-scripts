@@ -9,10 +9,8 @@ cat "$repositoriesFile"
 
 rm -rf $WORKSPACE/ivy2
 
-# want full control over sbt, so invoke the launcher directly
-java -Dsbt.log.noformat=true -Dsbt.ivy.home=$WORKSPACE/ivy2 \
+sbt -Dsbt.log.noformat=true -Dsbt.ivy.home=$WORKSPACE/ivy2 \
   -Dsbt.override.build.repos=true -Dsbt.repository.config="$repositoriesFile" \
-  -jar $sbtLauncher \
   $sbtDistVersionOverride \
   clean run
 
@@ -60,3 +58,18 @@ helloOutput=`$bin/scala Hello`
   echo "Hello returned $helloOutput"
   exit 1
 }
+
+
+# check properties files
+
+checkVersionNumber() {
+  unzip $bin/../lib/scala-$1.jar $1.properties
+  versionOutput=`cat $1.properties | grep "^version.number=" | sed 's/version\.number=\(.*\)/\1/'`
+  [[ $versionOutput == $version ]] || {
+    echo "version number in $1.properties does not match: $versionOutput"
+    exit 1
+  }
+}
+
+checkVersionNumber "library"
+checkVersionNumber "compiler"
