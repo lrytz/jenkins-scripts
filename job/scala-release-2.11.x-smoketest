@@ -1,0 +1,62 @@
+#!/bin/bash -ex
+
+# This script requires sbtDistVersionOverride=-Dproject.version=...
+
+repositoriesFile="$WORKSPACE/jenkins-scripts/repositories-scala-release"
+
+echo "Using repo config:"
+cat "$repositoriesFile"
+
+rm -rf $WORKSPACE/ivy2
+
+# want full control over sbt, so invoke the launcher directly
+java -Dsbt.log.noformat=true -Dsbt.ivy.home=$WORKSPACE/ivy2 \
+  -Dsbt.override.build.repos=true -Dsbt.repository.config="$repositoriesFile" \
+  -jar $sbtLauncher \
+  $sbtDistVersionOverride \
+  clean run
+
+
+# test the command line tools
+
+rm -rf sandbox
+mkdir sandbox
+cd sandbox
+
+url="http://downloads.typesafe.com/scala/$version"
+wget -nv -O scala-$version.tgz $url/scala-$version.tgz
+tar xzvf scala-$version.tgz
+
+bin=`pwd`/scala-$version/bin
+
+
+
+$bin/scala -e 'assert("11".toInt == 11)'
+
+scalapOutput=`$bin/scalap scala.collection.immutable.List | grep 'def head' | tr -d ' '`
+[[ $scalapOutput == "defhead:A" ]] || {
+  echo "scalap test failed, returned $scalapOutput"
+  exit 1
+}
+
+testCommand() {
+  output=`$bin/$1 2>&1 | grep "$2" || :`
+  [[ $output =~ .*$2.* ]] || {
+    echo "$1 command output does not mention $2: $output"
+    exit 1
+  }
+}
+
+testCommand "scalac" "optimise"
+testCommand "fsc" "shutdown"
+testCommand "scaladoc" "doc-title"
+
+
+echo 'object Hello extends App { println(1 to 4 filter (_ % 2 == 0) mkString " - ") }' > Hello.scala
+$bin/scalac Hello.scala
+helloOutput=`$bin/scala Hello`
+
+[[ $helloOutput == "2 - 4" ]] || {
+  echo "Hello returned $helloOutput"
+  exit 1
+}
