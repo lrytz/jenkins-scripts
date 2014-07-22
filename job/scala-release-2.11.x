@@ -293,14 +293,14 @@ buildModules() {
 ## BUILD STEPS:
 
 determineScalaVersion() {
+  update scala scala $SCALA_REF
+  parseScalaProperties "versions.properties"
+
   if [ -z "$SCALA_VER_BASE" ]; then
     echo "No SCALA_VER_BASE specified."
 
-    update scala scala $SCALA_REF
-
     scalaTag=$(git describe --exact-match ||:)
 
-    parseScalaProperties "versions.properties"
     SCALA_BINARY_VER=${SCALA_BINARY_VER-"$scala_binary_version"}
 
     if [ -z "$scalaTag" ]
@@ -416,6 +416,9 @@ constructUpdatedModuleVersions() {
   if [ "$XML_BUILT" == "yes" ];                  then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-xml.version.number=$XML_VER"); fi
 
   if [ "$PARTEST_BUILT" == "yes" ];              then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dpartest.version.number=$PARTEST_VER"); fi
+
+  # allow overriding the akka-actors version using a jenkins build parameter
+  if [ ! -z "$AKKA_ACTOR_VER" ]; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dakka-actor.version.number=$AKKA_ACTOR_VER"); fi
 
   if [ ! -z "$SCALA_BINARY_VER" ]; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala.binary.version=$SCALA_BINARY_VER"); fi
   if [ ! -z "$SCALA_FULL_VER" ]; then   updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala.full.version=$SCALA_FULL_VER"); fi
