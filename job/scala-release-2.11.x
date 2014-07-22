@@ -193,7 +193,6 @@ buildXML() {
   else
     update scala scala-xml "$XML_REF" && gfxd
     sbtBuild 'set version := "'$XML_VER'-DOC"' $clean doc  'set version := "'$XML_VER'"' "${buildTasks[@]}"
-    XML_BUILT="yes"
   fi
 }
 
@@ -203,7 +202,6 @@ buildParsers() {
   else
     update scala scala-parser-combinators "$PARSERS_REF" && gfxd
     sbtBuild 'set version := "'$PARSERS_VER'-DOC"' $clean doc 'set version := "'$PARSERS_VER'"' "${buildTasks[@]}"
-    PARSERS_BUILT="yes"
   fi
 }
 
@@ -213,7 +211,6 @@ buildPartest() {
   else
     update scala scala-partest "$PARTEST_REF" && gfxd
     sbtBuild 'set version :="'$PARTEST_VER'"' 'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' 'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' $clean "${buildTasks[@]}"
-    PARTEST_BUILT="yes"
   fi
 }
 
@@ -223,7 +220,6 @@ buildPartest() {
 #   else
 #     update scala scala-partest-interface "$PARTEST_IFACE_REF" && gfxd
 #     sbtBuild 'set version :="'$PARTEST_IFACE_VER'"' $clean "${buildTasks[@]}"
-#     PARTEST_IFACE_BUILT="yes"
 #   fi
 # }
 
@@ -235,7 +231,6 @@ buildContinuations() {
 
     $sbtCmd $sbtArgs 'project plugin' "${scalaVersionTasks[@]}" "${publishTasks[@]}" \
       'set version := "'$CONTINUATIONS_VER'"' $clean "compile:package" "${buildTasks[@]}" # https://github.com/scala/scala-continuations/pull/4
-    CONTINUATIONS_PLUGIN_BUILT="yes"
   fi
 
   if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.plugins"  "scala-continuations-library" $CONTINUATIONS_VER )
@@ -244,7 +239,6 @@ buildContinuations() {
     update scala scala-continuations $CONTINUATIONS_REF && gfxd
     $sbtCmd $sbtArgs 'project library' "${scalaVersionTasks[@]}" "${publishTasks[@]}" \
       'set version := "'$CONTINUATIONS_VER'"' $clean "${buildTasks[@]}"
-    CONTINUATIONS_LIB_BUILT="yes"
   fi
 }
 
@@ -254,7 +248,6 @@ buildSwing() {
   else
     update scala scala-swing "$SWING_REF" && gfxd
     sbtBuild 'set version := "'$SWING_VER'"' $clean "${buildTasks[@]}"
-    SWING_BUILT="yes"
   fi
 }
 
@@ -264,7 +257,6 @@ buildActorsMigration(){
   else
     update scala actors-migration "$ACTORS_MIGRATION_REF" && gfxd
     sbtBuild 'set version := "'$ACTORS_MIGRATION_VER'"' 'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' $clean "${buildTasks[@]}"
-    ACTORS_MIGRATION_BUILT="yes"
   fi
 }
 
@@ -408,20 +400,25 @@ deriveModuleVersions() {
 constructUpdatedModuleVersions() {
   updatedModuleVersions=()
 
-  if [ "$ACTORS_MIGRATION_BUILT" == "yes" ];     then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dactors-migration.version.number=$ACTORS_MIGRATION_VER"); fi
-  if [ "$CONTINUATIONS_LIB_BUILT" == "yes" ];    then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-continuations-library.version.number=$CONTINUATIONS_VER"); fi
-  if [ "$CONTINUATIONS_PLUGIN_BUILT" == "yes" ]; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER"); fi
-  if [ "$PARSERS_BUILT" == "yes" ];              then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-parser-combinators.version.number=$PARSERS_VER"); fi
-  if [ "$SWING_BUILT" == "yes" ];                then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-swing.version.number=$SWING_VER"); fi
-  if [ "$XML_BUILT" == "yes" ];                  then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-xml.version.number=$XML_VER"); fi
+  # force the new module versions for building the core. these may be different from the values in versions.properties,
+  # either because the variables (XML_VER) were provided, or because we're building the modules from HEAD.
+  # in the common case, the values are the same as in versions.properties.
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dactors-migration.version.number=$ACTORS_MIGRATION_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-continuations-library.version.number=$CONTINUATIONS_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-continuations-plugin.version.number=$CONTINUATIONS_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-parser-combinators.version.number=$PARSERS_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-swing.version.number=$SWING_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala-xml.version.number=$XML_VER")
 
-  if [ "$PARTEST_BUILT" == "yes" ];              then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dpartest.version.number=$PARTEST_VER"); fi
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dpartest.version.number=$PARTEST_VER")
+  updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscalacheck.version.number=$SCALACHECK_VER")
 
-  # allow overriding the akka-actors version using a jenkins build parameter
+  # allow overriding the akka-actors and jline version using a jenkins build parameter
   if [ ! -z "$AKKA_ACTOR_VER" ]; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dakka-actor.version.number=$AKKA_ACTOR_VER"); fi
+  if [ ! -z "$JLINE_VER" ]     ; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Djline.version=$JLINE_VER"); fi
 
   if [ ! -z "$SCALA_BINARY_VER" ]; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala.binary.version=$SCALA_BINARY_VER"); fi
-  if [ ! -z "$SCALA_FULL_VER" ]; then   updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala.full.version=$SCALA_FULL_VER"); fi
+  if [ ! -z "$SCALA_FULL_VER" ]  ; then updatedModuleVersions=("${updatedModuleVersions[@]}" "-Dscala.full.version=$SCALA_FULL_VER"); fi
 }
 
 # build locker (scala + modules) and quick, publishing everything to private-repo
