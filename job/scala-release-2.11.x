@@ -187,30 +187,43 @@ sbtResolve() {
 # then set the version to the right one and publish (which won't re-gen the docs).
 # Also tried publish-local without docs using 'set publishArtifact in (Compile, packageDoc) := false' and republishing, no dice.
 
+# Each buildModule() function is invoked twice: first to build against locker and publish to private-repo, then
+# to build against the release and publish to sonatype (or publish-local if publishToSonatype is not "yes").
+# In the second round, sbtResolve is always true: the module will be found in the private-repo!
+# Therefore, if MODULE_BUILT is "yes" (in the second round), we know that we need to build (and publish) the
+# module again.
+#
+# Note: we tried an alternative solution in which sbtResolve would not look at private-repo, but that fails. For example,
+# scala-xml depends on scala-library, so sbt tries to find the scala-library of the version that we are currently building,
+# which exists only in private-repo.
+
 buildXML() {
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-xml" $XML_VER )
+  if [ "$XML_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-xml" $XML_VER )
   then echo "Found scala-xml $XML_VER; not building."
   else
     update scala scala-xml "$XML_REF" && gfxd
     sbtBuild 'set version := "'$XML_VER'-DOC"' $clean doc  'set version := "'$XML_VER'"' "${buildTasks[@]}"
+    XML_BUILT="yes" # ensure the module is built and published when buildXML is invoked for the second time, see comment above
   fi
 }
 
 buildParsers() {
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-parser-combinators" $PARSERS_VER )
+  if [ "$PARSERS_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-parser-combinators" $PARSERS_VER )
   then echo "Found scala-parser-combinators $PARSERS_VER; not building."
   else
     update scala scala-parser-combinators "$PARSERS_REF" && gfxd
     sbtBuild 'set version := "'$PARSERS_VER'-DOC"' $clean doc 'set version := "'$PARSERS_VER'"' "${buildTasks[@]}"
+    PARSERS_BUILT="yes"
   fi
 }
 
 buildPartest() {
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-partest" $PARTEST_VER )
+  if [ "$PARTEST_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-partest" $PARTEST_VER )
   then echo "Found scala-partest $PARTEST_VER; not building."
   else
     update scala scala-partest "$PARTEST_REF" && gfxd
     sbtBuild 'set version :="'$PARTEST_VER'"' 'set VersionKeys.scalaXmlVersion := "'$XML_VER'"' 'set VersionKeys.scalaCheckVersion := "'$SCALACHECK_VER'"' $clean "${buildTasks[@]}"
+    PARTEST_BUILT="yes"
   fi
 }
 
@@ -224,48 +237,53 @@ buildPartest() {
 # }
 
 buildContinuations() {
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.plugins"  "scala-continuations-plugin" $CONTINUATIONS_VER full )
+  if [ "$CONT_PLUG_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.plugins"  "scala-continuations-plugin" $CONTINUATIONS_VER full )
   then echo "Found scala-continuations-plugin $CONTINUATIONS_VER; not building."
   else
     update scala scala-continuations $CONTINUATIONS_REF && gfxd
 
     $sbtCmd $sbtArgs 'project plugin' "${scalaVersionTasks[@]}" "${publishTasks[@]}" \
       'set version := "'$CONTINUATIONS_VER'"' $clean "compile:package" "${buildTasks[@]}" # https://github.com/scala/scala-continuations/pull/4
+    CONT_PLUG_BUILT="yes"
   fi
 
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.plugins"  "scala-continuations-library" $CONTINUATIONS_VER )
+  if [ "$CONT_LIB_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.plugins"  "scala-continuations-library" $CONTINUATIONS_VER )
   then echo "Found scala-continuations-library $CONTINUATIONS_VER; not building."
   else
     update scala scala-continuations $CONTINUATIONS_REF && gfxd
     $sbtCmd $sbtArgs 'project library' "${scalaVersionTasks[@]}" "${publishTasks[@]}" \
       'set version := "'$CONTINUATIONS_VER'"' $clean "${buildTasks[@]}"
+    CONT_LIB_BUILT="yes"
   fi
 }
 
 buildSwing() {
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-swing" $SWING_VER )
+  if [ "$SWING_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang.modules"  "scala-swing" $SWING_VER )
   then echo "Found scala-swing $SWING_VER; not building."
   else
     update scala scala-swing "$SWING_REF" && gfxd
     sbtBuild 'set version := "'$SWING_VER'"' $clean "${buildTasks[@]}"
+    SWING_BUILT="yes"
   fi
 }
 
 buildActorsMigration(){
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang"  "scala-actors-migration" $ACTORS_MIGRATION_VER )
+  if [ "$ACTORS_MIGRATION_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scala-lang"  "scala-actors-migration" $ACTORS_MIGRATION_VER )
   then echo "Found scala-actors-migration $ACTORS_MIGRATION_VER; not building."
   else
     update scala actors-migration "$ACTORS_MIGRATION_REF" && gfxd
     sbtBuild 'set version := "'$ACTORS_MIGRATION_VER'"' 'set VersionKeys.continuationsVersion := "'$CONTINUATIONS_VER'"' $clean "${buildTasks[@]}"
+    ACTORS_MIGRATION_BUILT="yes"
   fi
 }
 
 buildScalacheck(){
-  if [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scalacheck"  "scalacheck" $SCALACHECK_VER )
+  if [ "$SCALACHECK_BUILT" != "yes" ] && [ "$forceRebuild" != "yes" ] && ( sbtResolve "org.scalacheck"  "scalacheck" $SCALACHECK_VER )
   then echo "Found scalacheck $SCALACHECK_VER; not building."
   else
     update rickynils scalacheck $SCALACHECK_REF && gfxd
     sbtBuild 'set version := "'$SCALACHECK_VER'"' 'set VersionKeys.scalaParserCombinatorsVersion := "'$PARSERS_VER'"' $clean $publishPrivateTask # test times out NOTE: never published to sonatype
+    SCALACHECK_BUILT="yes"
   fi
 }
 
