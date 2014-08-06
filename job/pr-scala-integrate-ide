@@ -30,11 +30,16 @@ else
   git clone $UBERBUILD_URL
 fi
 
+if [ "$version_minor" = "10" ]
+    then echo "Using Scala 2.10-specific config file."; CONFIG_FILE_NAME="validator-2.10.conf"
+    else echo "Using default config file."; CONFIG_FILE_NAME="validator.conf"
+fi
+
 # pass prRepoUrl in, which uber-build passes along to dbuild (in sbt-builds-for-ide)
 # the "-P pr-scala" maven arg accomplishes the same thing for maven (directly used in uber-build)
 prRepoUrl="$prRepoUrl"\
   MAVEN_ARGS="-P pr-scala"\
-    $UBERBUILD_DIR/uber-build.sh $UBERBUILD_DIR/config/validator.conf $sha $maven_version_number
+    $UBERBUILD_DIR/uber-build.sh $UBERBUILD_DIR/config/$CONFIG_FILE_NAME $sha $maven_version_number
 
 # uber-build puts its local repo under target/m2repo
 # wipe the org/scala-lang part, which otherwise just keeps
