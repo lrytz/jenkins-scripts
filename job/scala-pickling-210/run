@@ -13,8 +13,8 @@ git clone git@github.com:scala/pickling.git pickling
 cd pickling
 git checkout 0.9.x
 
-local jar="quasiquotes_2.10-2.0.0.jar"
-local url="http://search.maven.org/remotecontent?filepath=org/scalamacros/quasiquotes_2.10/2.0.0/quasiquotes_2.10-2.0.0.jar"
+jar="quasiquotes_2.10-2.0.0.jar"
+url="http://search.maven.org/remotecontent?filepath=org/scalamacros/quasiquotes_2.10/2.0.0/quasiquotes_2.10-2.0.0.jar"
 
 http_code=$(curl --fail --silent --output "$jar" "$url")
 if (( $? != 0 )); then
